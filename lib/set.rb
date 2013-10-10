@@ -31,9 +31,9 @@ module Hipster
     end
 
     # Apply exponential time decay.
-    def decay
+    def decay(opts = {})
       t0 = last_decayed_date
-      t1 = Time.now.to_f
+      t1 = opts.fetch(:date, Time.now).to_f
       delta_t = t1 - t0
       set = fetch_raw
       rate = 1 / Float(lifetime)

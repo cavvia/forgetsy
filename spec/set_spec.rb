@@ -56,11 +56,23 @@ describe "Hipster::Set" do
 
   describe 'decay' do
     it 'decays counts exponentially' do
-      @set.incr_by('foo_bin', 2)
-      @set.incr_by('bar_bin', 10)
-      @set.decay
-      @set.fetch(bin: 'foo_bin').values.first.should < 2
-      @set.fetch(bin: 'bar_bin').values.first.should < 10
+      manual_date = 2.days.ago
+      now = Time.now
+      time_delta = now - manual_date
+      lifetime = 1.week
+      foo, bar = 2, 10
+
+      rate = 1 / Float(lifetime)
+      @set = Hipster::Set.new('foo', t: lifetime, date: manual_date)
+      @set.incr_by('foo_bin', foo)
+      @set.incr_by('bar_bin', bar)
+
+      decayed_foo = foo * Math.exp(- rate * time_delta)
+      decayed_bar = bar * Math.exp(- rate * time_delta)
+
+      @set.decay(date: now)
+      @set.fetch(bin: 'foo_bin').values.first.round(3).should == decayed_foo.round(3)
+      @set.fetch(bin: 'bar_bin').values.first.round(3).should == decayed_bar.round(3)
     end
   end
 
