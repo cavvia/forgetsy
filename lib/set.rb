@@ -10,6 +10,9 @@ module Hipster
 
     # Stores mean lifetime and last decay date
     # in special keys on creation.
+    #
+    # @param float opts[:t] : mean lifetime of an observation in secs.
+    # @param opts[:date] : a manual date to start decaying from.
     def initialize(name, opts = {})
       @name = name
 
@@ -22,15 +25,31 @@ module Hipster
       conn.zadd(name, opts[:t].to_f, @@lifetime_key)
     end
 
-    def incr(bin)
-      conn.zincrby(@name, 1, bin)
+    # Fetch the entire set, or optionally ask for
+    # the top :n results, or an individual :bin.
+    #
+    # @example Retrive top n results
+    #   set.fetch(n: 20)
+    #
+    # @example Retrive an individual bin
+    #   set.fetch(bin: 'foo')
+    #
+    # @return Hash
+    def fetch(opts = {})
+      limit = opts[:n] || -1
+      decay if opts.fetch(:decay, true)
+
+      if opts.key?(:bin)
+        result = [opts[:bin], conn.zscore(@name, opts[:bin])]
+      else
+        result = fetch_raw(limit: limit)
+      end
+
+      Hash[*result.flatten]
     end
 
-    def incr_by(bin, by)
-      conn.zincrby(@name, by, bin)
-    end
-
-    # Apply exponential time decay.
+    # Apply exponential time decay and
+    # update the last decay time.
     def decay(opts = {})
       t0 = last_decayed_date
       t1 = opts.fetch(:date, Time.now).to_f
@@ -46,17 +65,12 @@ module Hipster
       end
     end
 
-    def fetch(opts = {})
-      limit = opts[:n] || -1
-      decay if opts.fetch(:decay, true)
+    def incr(bin)
+      conn.zincrby(@name, 1, bin)
+    end
 
-      if opts.key?(:bin)
-        result = [opts[:bin], conn.zscore(@name, opts[:bin])]
-      else
-        result = fetch_raw(limit: limit)
-      end
-
-      Hash[*result.flatten]
+    def incr_by(bin, by)
+      conn.zincrby(@name, by, bin)
     end
 
     def last_decayed_date
@@ -69,7 +83,8 @@ module Hipster
 
     private
 
-    # Buffer the limit as special keys may be in top n results.
+    # Buffer the limit as special keys may be in
+    # top n results.
     def fetch_raw(opts = {})
       limit = opts[:limit] || -1
       buffered_limit = limit
