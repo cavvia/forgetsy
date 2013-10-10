@@ -9,7 +9,7 @@ A _Delta_ consists of two sets of counters, each of which implements exponential
 
 ![equation](http://latex.codecogs.com/gif.latex?X_t_1%3DX_t_0%5Ctimes%7Be%5E%7B-%5Clambda%5Ctimes%7Bt%7D%7D%7D)
 
-Where the inverse of the exponent constant lambda is the _decay rate_, expressed in time units and corresponding to the mean lifetime of an observation in the set. By dividing two sets with differing decay rates over each other, we obtain a temporal delta _rate_ for each category in a distribution.
+Where the inverse of the exponent constant lambda is the _decay rate_, expressed in time units and corresponding to the mean lifetime of an observation in the set. By normalising such a set by a set with a slower decay rate, we obtain a temporal trending score for each category in a distribution.
 
 Hipster avoids the need for sliding time windows and explicit rolling counts, as observations naturally decay away over time. It's designed for heavy writes and sparse reads, as it implements decay at read time.
 
@@ -48,7 +48,7 @@ Will print:
 
     { 'UserFoo' => 0.789, 'UserBar' => 0.367 }
 
-Each user is given a dimensionless score in the range [0..1] corresponding to the _rate_ of follows over the time period.
+Each user is given a dimensionless score in the range [0..1] corresponding to the normalised follows delta over the time period.
 
 Optionally fetch the top _n_ users, or an individual user's trending score:
 
