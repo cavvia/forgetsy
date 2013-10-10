@@ -24,17 +24,17 @@ Usage
 
 Take, for example, a social network in which users can follow each other. You want to track trending users. You construct a one week delta, to capture trends in your follows data over one week periods:
 
-    follows_delta = Hipster::Delta.new('user_follows', t=1.week)
+    follows_delta = Hipster::Delta.new('user_follows', t: 1.week)
 
 The delta consists of two sets of counters indexed by category identifiers. In this example, the identifiers will be user ids. One set decays over the mean lifetime specified by _t_, and another set decays over double the lifetime.
 
 You can now add observations to the delta, in the form of follow events. Each time a user follows another, you increment the followed user id. You can also do this retrospectively:
 
     follows_delta = Hipster::Delta.fetch('user_follows')
-    follows_delta.incr('UserFoo', date=2.weeks.ago)
-    follows_delta.incr('UserBar', date=2.weeks.ago)
-    follows_delta.incr('UserBar', date=1.week.ago)
-    follows_delta.incr('UserFoo', date=1.day.ago)
+    follows_delta.incr('UserFoo', date: 2.weeks.ago)
+    follows_delta.incr('UserBar', date: 2.weeks.ago)
+    follows_delta.incr('UserBar', date: 1.week.ago)
+    follows_delta.incr('UserFoo', date: 1.day.ago)
     follows_delta.incr('UserFoo')
 
 Providing an explicit date is useful if you are processing data asynchronously. You can also use `incr_by` to increment a counter in batches.
