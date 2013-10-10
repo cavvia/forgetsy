@@ -52,8 +52,8 @@ Each user is given a dimensionless score in the range [0..1] corresponding to th
 
 Optionally fetch the top _n_ users, or an individual user's trending score:
 
-    follows_delta.fetch(n)
-    follows_delta.fetch('UserFoo')
+    follows_delta.fetch(n: 20)
+    follows_delta.fetch(bin: 'UserFoo')
 
 Contributing
 ------------
