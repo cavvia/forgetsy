@@ -9,7 +9,7 @@ Trends are encapsulated by a construct named _Delta_. A _Delta_ consists of two 
 
 ![equation](http://latex.codecogs.com/gif.latex?X_t_1%3DX_t_0%5Ctimes%7Be%5E%7B-%5Clambda%5Ctimes%7Bt%7D%7D%7D)
 
-Where the inverse of the _decay rate_ lambda is the mean lifetime of an observation in the set, expressed in time units. By normalising such a set by a set with a slower decay rate, we obtain a temporal trending score for each category in a distribution.
+Where the inverse of the _decay rate_ (lambda) is the mean lifetime of an observation in the set, expressed in time units. By normalising such a set by a set with a slower decay rate, we obtain a temporal trending score for each category in a distribution.
 
 Hipster avoids the need for sliding time windows and explicit rolling counts, as observations naturally decay away over time. It's designed for heavy writes and sparse reads, as it implements decay at read time.
 
