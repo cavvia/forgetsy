@@ -22,7 +22,7 @@ It requires redis to be running on localhost at the default port (6379).
 Usage
 -----
 
-Take, for example, a social network in which users can follow each other. You want to track trending users. You construct a one week delta, to capture the dynamics of your follows data over one week periods:
+Take, for example, a social network in which users can follow each other. You want to track trending users. You construct a one week delta, to capture trends in your follows data over one week periods:
 
     follows_delta = Hipster::Delta.new('user_follows', t=1.week)
 
