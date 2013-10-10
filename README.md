@@ -3,9 +3,9 @@ Hipster
 
 __Note__: This is a draft readme. Implementation is on-going. I will remove this notice when the interface described below is fully operational.
 
-Hipster is a trending library designed to track temporal trends in non-stationary categorical distributions. It uses [forget-table](https://github.com/bitly/forgettable/) style data structures which decay observations over time. Using two such sets decaying over different time periods, it picks up on temporal trends, forgetting historical data responsibly. These trends are encapsulated by a construct named _Delta_.
+Hipster is a trending library designed to track temporal trends in non-stationary categorical distributions. It uses [forget-table](https://github.com/bitly/forgettable/) style data structures which decay observations over time. Using two such sets decaying over different time periods, it picks up on temporal trends, forgetting historical data responsibly. 
 
-A _Delta_ consists of two sets of counters, each of which implements exponential decay of the form:
+Trends are encapsulated by a construct named _Delta_. A _Delta_ consists of two sets of counters, each of which implements exponential decay of the form:
 
 ![equation](http://latex.codecogs.com/gif.latex?X_t_1%3DX_t_0%5Ctimes%7Be%5E%7B-%5Clambda%5Ctimes%7Bt%7D%7D%7D)
 
