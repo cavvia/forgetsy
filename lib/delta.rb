@@ -35,11 +35,12 @@ module Forgetsy
     # @param datetime opts[date] : a manual date to start decaying from.
     def self.create(name, opts = {})
       unless opts.key?(:t)
-        raise ArgumentError, "Please specify a mean lifetime using the 't' option"
+        fail ArgumentError,
+             "Please specify a mean lifetime using the 't' option"
       end
 
       opts[:date] ||= Time.now
-      delta = Forgetsy::Delta.new(name, opts)
+      Forgetsy::Delta.new(name, opts)
     end
 
     # Fetch an existing delta instance.
@@ -62,18 +63,7 @@ module Forgetsy
       opts.delete(:n)
       bin = opts.key?(:bin) ? opts[:bin] : nil
 
-      unless bin.nil?
-        counts = primary_set.fetch(opts)
-        norm = secondary_set.fetch(opts)
-
-        if not norm.key?(bin)
-          result = [bin, 0.0]
-        else
-          norm_v = counts[bin] / Float(norm[bin])
-          result = [bin, norm_v]
-        end
-      else
-        # fetch all scores
+      if bin.nil?
         counts = primary_set.fetch
         norm = secondary_set.fetch
         result = counts.map do |k, v|
@@ -81,12 +71,20 @@ module Forgetsy
           v = norm_v.nil? ? 0 : v / Float(norm_v)
           [k, v]
         end
+      else
+        # fetch a single bin.
+        counts = primary_set.fetch(opts)
+        norm = secondary_set.fetch(opts)
+
+        if ! norm.key?(bin)
+          result = [bin, 0.0]
+        else
+          norm_v = counts[bin] / Float(norm[bin])
+          result = [bin, norm_v]
+        end
       end
 
-      unless limit.nil?
-        result = result[0..limit-1]
-      end
-
+      result = result[0..limit - 1] unless limit.nil?
       Hash[*result.flatten]
     end
 

@@ -8,18 +8,28 @@ describe "Forgetsy::Set" do
   end
 
   describe 'creation' do
-    it "creates a redis set with the appropriate name and stores metadata" do
+    it 'creates a redis set with the appropriate name and stores metadata' do
       @redis.zcount('foo', '-inf', '+inf').should == 2
     end
 
-    it "stores the last decayed date in a special key upon creation" do
+    it 'stores the last decayed date in a special key upon creation' do
       manual_date = 3.weeks.ago
       a = Forgetsy::Set.create('bar', t: 1.week, date: manual_date)
       a.last_decayed_date.should == manual_date.to_f.round(7)
     end
 
-    it "stores the mean lifetime in a special key upon creation" do
+    it 'stores the mean lifetime in a special key upon creation' do
       @set.lifetime.should == 1.week.to_f
+    end
+
+    it 'fails with an argument error when no :t option is supplied' do
+      error = false
+      begin
+        @set = Forgetsy::Set.create('foo')
+      rescue ArgumentError
+        error = true
+      end
+      error.should == true
     end
   end
 
@@ -44,13 +54,13 @@ describe "Forgetsy::Set" do
     it 'can fetch top n bins' do
       @set.incr_by('foo_bin', 2)
       @set.incr_by('bar_bin', 1)
-      @set.fetch(n: 2, decay: false).should == { 'foo_bin' => 2.0, 'bar_bin' => 1.0}
+      @set.fetch(n: 2, decay: false).should == { 'foo_bin' => 2.0, 'bar_bin' => 1.0 }
     end
 
     it 'can fetch a whole set' do
       @set.incr_by('foo_bin', 2)
       @set.incr_by('bar_bin', 1)
-      @set.fetch(decay: false).should == { 'foo_bin' => 2.0, 'bar_bin' => 1.0}
+      @set.fetch(decay: false).should == { 'foo_bin' => 2.0, 'bar_bin' => 1.0 }
     end
   end
 

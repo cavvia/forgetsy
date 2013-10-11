@@ -2,6 +2,7 @@ require 'redis'
 
 module Forgetsy
 
+  # Redis connection.
   class Connection
 
     def self.fetch

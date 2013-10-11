@@ -23,7 +23,8 @@ module Forgetsy
     # @param datetime opts[date] : a manual date to start decaying from.
     def self.create(name, opts = {})
       unless opts.key?(:t)
-        raise ArgumentError, "Please specify a mean lifetime using the 't' option"
+        fail ArgumentError,
+             "Please specify a mean lifetime using the 't' option"
       end
 
       date = opts[:date] || Time.now
@@ -130,7 +131,7 @@ module Forgetsy
     end
 
     def filter_special_keys(set)
-      set.select { |k| not special_keys.include?(k[0]) }
+      set.select { |k| ! special_keys.include?(k[0]) }
     end
 
   end
