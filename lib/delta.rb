@@ -1,4 +1,4 @@
-module Hipster
+module Forgetsy
 
   class Delta
 

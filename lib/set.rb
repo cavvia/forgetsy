@@ -1,4 +1,4 @@
-module Hipster
+module Forgetsy
 
   # A data structure that decays counts exponentially
   # over time. Decay is applied at read time.
@@ -102,7 +102,7 @@ module Hipster
     end
 
     def conn
-      @_conn ||= Hipster::Connection.fetch
+      @_conn ||= Forgetsy::Connection.fetch
     end
 
     def special_keys

@@ -1,6 +1,6 @@
 require 'redis'
 
-module Hipster
+module Forgetsy
 
   class Connection
 

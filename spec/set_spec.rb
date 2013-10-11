@@ -1,10 +1,10 @@
 require 'spec_helper'
 
-describe "Hipster::Set" do
+describe "Forgetsy::Set" do
 
   before(:each) do
-    @redis = Hipster::Connection.fetch
-    @set = Hipster::Set.new('foo', t: 1.week)
+    @redis = Forgetsy::Connection.fetch
+    @set = Forgetsy::Set.new('foo', t: 1.week)
   end
 
   describe 'creation' do
@@ -14,7 +14,7 @@ describe "Hipster::Set" do
 
     it "stores the last decayed date in a special key upon creation" do
       manual_date = 3.weeks.ago
-      a = Hipster::Set.new('bar', t: 1.week, date: manual_date)
+      a = Forgetsy::Set.new('bar', t: 1.week, date: manual_date)
       a.last_decayed_date.should == manual_date.to_f.round(7)
     end
 
@@ -63,7 +63,7 @@ describe "Hipster::Set" do
       foo, bar = 2, 10
 
       rate = 1 / Float(lifetime)
-      @set = Hipster::Set.new('foo', t: lifetime, date: manual_date)
+      @set = Forgetsy::Set.new('foo', t: lifetime, date: manual_date)
       @set.incr_by('foo_bin', foo)
       @set.incr_by('bar_bin', bar)
 

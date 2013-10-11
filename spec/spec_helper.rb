@@ -6,7 +6,7 @@ require 'active_support/core_ext'
 
 RSpec.configure do |c|
   c.before(:each) do
-    redis = Hipster::Connection.fetch
+    redis = Forgetsy::Connection.fetch
     redis.flushdb
   end
 end
