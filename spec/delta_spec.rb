@@ -42,6 +42,18 @@ describe "Forgetsy::Delta" do
       all_scores.values[0].round(1).should == 1.0
       all_scores.values[1].round(1).should == 1.0
     end
+
+    it 'limits results when using :n option' do
+      delta = Forgetsy::Delta.create('foo', t: 1.week)
+      delta.incr_by('foo_bin', 3)
+      delta.incr_by('bar_bin', 2)
+      delta.incr('quux_bin')
+      all_scores = delta.fetch(n: 2)
+      all_scores.length.should == 2
+      all_scores = delta.fetch()
+      all_scores.length.should == 3
+    end
+
   end
 
 

@@ -58,8 +58,8 @@ module Forgetsy
     def fetch(opts = {})
 
       # do not delegate the limit to sets.
-      limit = opts[:n] || -1
-      opts.delete(:n) if opts.key?(:n)
+      limit = opts[:n]
+      opts.delete(:n)
       bin = opts.key?(:bin) ? opts[:bin] : nil
 
       unless bin.nil?
@@ -81,6 +81,10 @@ module Forgetsy
           v = norm_v.nil? ? 0 : v / Float(norm_v)
           [k, v]
         end
+      end
+
+      unless limit.nil?
+        result = result[0..limit-1]
       end
 
       Hash[*result.flatten]
