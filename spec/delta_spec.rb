@@ -7,7 +7,6 @@ describe "Forgetsy::Delta" do
   end
 
   describe 'creation' do
-
     it 'creates two set instances with appropriate keys' do
       delta = Forgetsy::Delta.create('foo', t: 1.week)
       delta.should be_kind_of(Forgetsy::Delta)
@@ -21,7 +20,6 @@ describe "Forgetsy::Delta" do
   end
 
   describe 'fetch' do
-
     it 'fetches normalised counts when fetching a single bin' do
       delta = Forgetsy::Delta.create('foo', t: 1.week)
       delta.incr('foo_bin')
@@ -53,7 +51,6 @@ describe "Forgetsy::Delta" do
       all_scores = delta.fetch()
       all_scores.length.should == 3
     end
-
   end
 
 

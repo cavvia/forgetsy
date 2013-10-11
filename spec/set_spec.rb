@@ -43,6 +43,14 @@ describe "Forgetsy::Set" do
       @set.incr_by('foo_bin', 5)
       @redis.zscore('foo', 'foo_bin').should == 5.0
     end
+
+    it 'ignores an increment with a date older than the last decay date' do
+      manual_date = 2.weeks.ago
+      lifetime = 2.weeks
+      @set = Forgetsy::Set.create('foo', t: lifetime, date: manual_date)
+      @set.incr('foo_bin', date: 3.weeks.ago)
+      @set.fetch(bin: 'foo_bin').values.first.should == nil
+    end
   end
 
   describe 'fetch' do

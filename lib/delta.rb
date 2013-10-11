@@ -49,7 +49,7 @@ module Forgetsy
     end
 
     # Fetch all scores, or optionally ask for
-    # the top :n results, or an individual :bin.
+    # the top n results, or an individual bin.
     #
     #   delta.fetch()
     #   delta.fetch(n: 20)
@@ -58,7 +58,8 @@ module Forgetsy
     # @return Hash
     def fetch(opts = {})
 
-      # do not delegate the limit to sets.
+      # do not delegate the limit to sets
+      # as we want to apply the limit after norm.
       limit = opts[:n]
       opts.delete(:n)
       bin = opts.key?(:bin) ? opts[:bin] : nil
@@ -88,13 +89,14 @@ module Forgetsy
       Hash[*result.flatten]
     end
 
-    # Increment a bin.
-    def incr(bin)
-      sets.each { |set| set.incr(bin) }
+    # Increment a bin. Additionally supply a date option
+    # to replay historical data.
+    def incr(bin, opts = {})
+      sets.each { |set| set.incr(bin, opts) }
     end
 
-    def incr_by(bin, by)
-      sets.each { |set| set.incr_by(bin, by) }
+    def incr_by(bin, by, opts = {})
+      sets.each { |set| set.incr_by(bin, by, opts) }
     end
 
     def primary_set

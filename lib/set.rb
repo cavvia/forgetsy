@@ -80,12 +80,14 @@ module Forgetsy
       end
     end
 
-    def incr(bin)
-      @conn.zincrby(@name, 1, bin)
+    def incr(bin, opts = {})
+      date = opts.fetch(:date, Time.now)
+      @conn.zincrby(@name, 1, bin) if valid_incr_date(date)
     end
 
-    def incr_by(bin, by)
-      @conn.zincrby(@name, by, bin)
+    def incr_by(bin, by, opts = {})
+      date = opts.fetch(:date, Time.now)
+      @conn.zincrby(@name, by, bin) if valid_incr_date(date)
     end
 
     def last_decayed_date
@@ -132,6 +134,10 @@ module Forgetsy
 
     def filter_special_keys(set)
       set.select { |k| ! special_keys.include?(k[0]) }
+    end
+
+    def valid_incr_date(date)
+      return date && date.to_f > last_decayed_date.to_f
     end
 
   end
