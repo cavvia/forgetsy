@@ -8,22 +8,35 @@ module Forgetsy
     @@last_decayed_key = '_last_decay'
     @@lifetime_key = '_t'
 
+    def initialize(name)
+      @name = name
+      setup_conn
+    end
+
+    # Factory method. Use this instead of direct
+    # instantiation to create a new set.
+    #
     # Stores mean lifetime and last decay date
     # in special keys on creation.
     #
-    # @param float opts[:t] : mean lifetime of an observation in secs.
-    # @param opts[:date] : a manual date to start decaying from.
-    def initialize(name, opts = {})
-      @name = name
-
+    # @param float opts[t] : mean lifetime of an observation (secs).
+    # @param datetime opts[date] : a manual date to start decaying from.
+    def self.create(name, opts = {})
       unless opts.key?(:t)
         raise ArgumentError, "Please specify a mean lifetime using the 't' option"
       end
 
-      setup_conn
       date = opts[:date] || Time.now
-      update_decay_date(date)
-      conn.zadd(name, opts[:t].to_f, @@lifetime_key)
+
+      set = Forgetsy::Set.new(name)
+      set.update_decay_date(date)
+      set.create_lifetime_key(opts[:t])
+      set
+    end
+
+    # Fetch an existing set instance.
+    def self.fetch(name)
+      Forgetsy::Set.new(name)
     end
 
     # Fetch the entire set, or optionally ask for
@@ -82,12 +95,22 @@ module Forgetsy
       @conn.zscore(@name, @@lifetime_key)
     end
 
+    def create_lifetime_key(t)
+      @conn.zadd(@name, t.to_f, @@lifetime_key)
+    end
+
+    def update_decay_date(date)
+      @conn.zadd(@name, date.to_f, @@last_decayed_key)
+    end
+
     private
 
-    # Buffer the limit as special keys may be in
-    # top n results.
+    # Fetch the set without decay applied.
     def fetch_raw(opts = {})
       limit = opts[:limit] || -1
+
+      # Buffer the limit as special keys may be in
+      # top n results.
       buffered_limit = limit
 
       if limit > 0
@@ -96,10 +119,6 @@ module Forgetsy
 
       set = @conn.zrevrange(@name, 0, buffered_limit, withscores: true)
       filter_special_keys(set)[0..limit]
-    end
-
-    def update_decay_date(date)
-      @conn.zadd(@name, date.to_f, @@last_decayed_key)
     end
 
     def setup_conn
@@ -113,6 +132,7 @@ module Forgetsy
     def filter_special_keys(set)
       set.select { |k| not special_keys.include?(k[0]) }
     end
+
   end
 
 end
