@@ -94,4 +94,14 @@ describe "Forgetsy::Set" do
     end
   end
 
+  describe 'scrub' do
+    it 'scrubs keys below a defined threshold during a fetch' do
+      manual_date = 12.months.ago
+      lifetime = 1.week
+      @set = Forgetsy::Set.create('foo', t: lifetime, date: manual_date)
+      @set.incr('foo_bin')
+      @set.fetch.values.length.should == 0
+    end
+  end
+
 end

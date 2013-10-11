@@ -8,6 +8,9 @@ module Forgetsy
     @@last_decayed_key = '_last_decay'
     @@lifetime_key = '_t'
 
+    # scrub keys scoring lower than this.
+    @@hi_pass_filter = 0.0001
+
     def initialize(name)
       @name = name
       setup_conn
@@ -53,6 +56,7 @@ module Forgetsy
     def fetch(opts = {})
       limit = opts[:n] || -1
       decay if opts.fetch(:decay, true)
+      scrub if opts.fetch(:scrub, true)
 
       if opts.key?(:bin)
         result = [opts[:bin], @conn.zscore(@name, opts[:bin])]
@@ -78,6 +82,10 @@ module Forgetsy
         end
         update_decay_date(Time.now)
       end
+    end
+
+    def scrub
+      @conn.zremrangebyscore(@name, '-inf', @@hi_pass_filter)
     end
 
     def incr(bin, opts = {})
