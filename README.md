@@ -24,7 +24,7 @@ Usage
 
 Take, for example, a social network in which users can follow each other. You want to track trending users. You construct a one week delta, to capture trends in your follows data over one week periods:
 ```ruby
-follows_delta = Forgetsy::Delta.new('user_follows', t: 1.week)
+follows_delta = Forgetsy::Delta.create('user_follows', t: 1.week)
 ```
 The delta consists of two sets of counters indexed by category identifiers. In this example, the identifiers will be user ids. One set decays over the mean lifetime specified by _t_, and another set decays over double the lifetime.
 
