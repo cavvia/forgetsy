@@ -7,10 +7,11 @@ module Forgetsy
   class Connection
 
     def self.fetch
-      Redis.new(self.config)
+      @@conn ||= Redis.new(self.config)
     end
 
     def self.config
+      puts 'blah'
       path = File.expand_path("../../config/redis.yml", __FILE__)
       @@config ||= YAML.load_file(path).fetch('redis')
     end
