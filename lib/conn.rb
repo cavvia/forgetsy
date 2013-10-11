@@ -1,4 +1,5 @@
 require 'redis'
+require 'yaml'
 
 module Forgetsy
 
@@ -6,7 +7,12 @@ module Forgetsy
   class Connection
 
     def self.fetch
-      Redis.new(db: 3)
+      Redis.new(self.config)
+    end
+
+    def self.config
+      path = File.expand_path("../../config/redis.yml", __FILE__)
+      @@config ||= YAML.load_file(path).fetch('redis')
     end
   end
 end
