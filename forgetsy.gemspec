@@ -15,8 +15,8 @@ Gem::Specification.new do |gem|
   gem.email = ["anil@cavvia.net"]
   gem.authors = ["Anil Bawa-Cavia"]
 
-  s.files         = `git ls-files`.split("\n")
-  s.test_files    = `git ls-files -- spec/*`.split("\n")
+  gem.files         = `git ls-files`.split("\n")
+  gem.test_files    = `git ls-files -- spec/*`.split("\n")
 
   gem.add_runtime_dependency "redis", '> 2.0'
   gem.add_runtime_dependency "active_support", '~> 3.0.0'
