@@ -1,15 +1,13 @@
 Forgetsy
 =======
 
-__Note__: This is a draft readme. Implementation is on-going. I will remove this notice when the interface described below is fully operational.
-
-Forgetsy is a trending library designed to track temporal trends in non-stationary categorical distributions. It uses [forget-table](https://github.com/bitly/forgettable/) style data structures which decay observations over time. Using two such sets decaying over different lifetimes, it picks up on time differentials, whilst forgetting historical data responsibly.
+Forgetsy is a trending library designed to track temporal trends in non-stationary categorical distributions. It uses [forget-table](https://github.com/bitly/forgettable/) style data structures which decay observations over time. Using two such sets decaying over different lifetimes, it picks up on changes to recent dynamics in your observations, whilst forgetting historical data responsibly.
 
 Trends are encapsulated by a construct named _Delta_. A _Delta_ consists of two sets of counters, each of which implements exponential decay of the form:
 
 ![equation](http://latex.codecogs.com/gif.latex?X_t_1%3DX_t_0%5Ctimes%7Be%5E%7B-%5Clambda%5Ctimes%7Bt%7D%7D%7D)
 
-Where the inverse of the _decay rate_ (lambda) is the mean lifetime of an observation in the set. By normalising such a set by a set with a slower decay rate, we obtain a trending score for each category in a distribution.
+Where the inverse of the _decay rate_ (lambda) is the mean lifetime of an observation in the set. By normalising such a set by a set with a slower decay rate, we obtain a trending score for each category in a distribution. This score expresses the delta in the rate of observations of a category over the lifetime of the set.
 
 Forgetsy avoids the need for manually sliding time windows or explicitly maintaining rolling counts, as observations naturally decay away over time. It's designed for heavy writes and sparse reads, as it implements decay at read time.
 
@@ -24,7 +22,7 @@ Usage
 
 Take, for example, a social network in which users can follow each other. You want to track trending users. You construct a one week delta, to capture trends in your follows data over one week periods:
 ```ruby
-follows_delta = Forgetsy::Delta.new('user_follows', t: 1.week)
+follows_delta = Forgetsy::Delta.create('user_follows', t: 1.week)
 ```
 The delta consists of two sets of counters indexed by category identifiers. In this example, the identifiers will be user ids. One set decays over the mean lifetime specified by _t_, and another set decays over double the lifetime.
 
