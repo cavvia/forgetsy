@@ -5,7 +5,7 @@ Gem::Specification.new do |gem|
   gem.homepage = "http://github.com/cavvia/forgetsy"
   gem.license = "MIT"
   gem.summary = %Q{A trending library built on redis.}
-  gem.version = '0.2'
+  gem.version = '0.2.1'
 
   gem.description = <<-EOS
     A scalable trending library that tracks temporal trends
