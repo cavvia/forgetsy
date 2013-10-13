@@ -1,3 +1,5 @@
+require 'set'
+
 module Forgetsy
 
   # An abstraction used to extract trending scores
