@@ -15,7 +15,7 @@ Each set is implemented as a redis `sorted set`, and keys are scrubbed when a co
 
 Forgetsy handles distributions with upto around 10^6 active categories, receiving hundreds of writes per second, without much fuss. Its scalability is highly dependent on your redis deployment.
 
-It requires redis to be running on localhost at the default port (6379).
+It requires [redis](https://github.com/antirez/redis) to be running on localhost at the default port (6379).
 
 Usage
 -----
