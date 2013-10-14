@@ -29,6 +29,16 @@ describe "Forgetsy::Delta" do
       delta.fetch(bin: 'bar_bin').values.first.round(1).should == 1.0
     end
 
+    it 'raises a value error if a delta with that name does not exist' do
+      error = false
+      begin
+        Forgetsy::Delta.fetch('foo')
+      rescue NameError
+        error = true
+      end
+      error.should == true
+    end
+
     it 'fetches normalised counts when fetching all scores' do
       delta = Forgetsy::Delta.create('foo', t: 1.week)
       delta.incr('foo_bin')

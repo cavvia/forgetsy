@@ -47,7 +47,11 @@ module Forgetsy
 
     # Fetch an existing delta instance.
     def self.fetch(name)
-      Forgetsy::Delta.new(name)
+      delta = Forgetsy::Delta.new(name)
+      unless delta.exists?
+        fail NameError,
+             'No delta with that name exists'
+      end
     end
 
     # Fetch all scores, or optionally ask for
@@ -111,6 +115,10 @@ module Forgetsy
 
     def sets
       [primary_set, secondary_set]
+    end
+
+    def exists?
+      @conn.exists(@name)
     end
 
     private
