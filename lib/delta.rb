@@ -52,6 +52,7 @@ module Forgetsy
         fail NameError,
              'No delta with that name exists'
       end
+      delta
     end
 
     # Fetch all scores, or optionally ask for
