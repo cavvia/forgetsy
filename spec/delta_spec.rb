@@ -29,6 +29,11 @@ describe "Forgetsy::Delta" do
       delta.fetch(bin: 'bar_bin').values.first.round(1).should == 1.0
     end
 
+    it 'returns nil when trying to fetch a non-existent bin' do
+      delta = Forgetsy::Delta.create('foo', t: 1.week)
+      delta.fetch(bin: 'foo_bin').should == {'foo_bin' => nil }
+    end
+
     it 'raises a value error if a delta with that name does not exist' do
       error = false
       begin

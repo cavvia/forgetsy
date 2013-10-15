@@ -84,8 +84,8 @@ module Forgetsy
         counts = primary_set.fetch(opts)
         norm = secondary_set.fetch(opts)
 
-        if ! norm.key?(bin)
-          result = [bin, 0.0]
+        if norm[bin].nil?
+          result = [bin, nil]
         else
           norm_v = counts[bin] / Float(norm[bin])
           result = [bin, norm_v]
