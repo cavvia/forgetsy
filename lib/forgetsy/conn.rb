@@ -11,7 +11,7 @@ module Forgetsy
     end
 
     def self.config
-      path = File.expand_path("../../config/redis.yml", __FILE__)
+      path = File.expand_path("../../../config/redis.yml", __FILE__)
       @@config ||= YAML.load_file(path).fetch('redis')
     end
   end
