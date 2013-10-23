@@ -17,13 +17,17 @@ module Forgetsy
       setup_conn
 
       if opts.key?(:t)
+        # we set the last decayed date of the secondary set to older than
+        # the primary, in order to support retrospective observations.
+        secondary_date = Time.now - ((Time.now - opts[:date]) * @@norm_t_mult)
+
         Forgetsy::Set.create(primary_set_key,
                              t: opts[:t],
                              date: opts[:date])
 
         Forgetsy::Set.create(secondary_set_key,
                              t: opts[:t] * @@norm_t_mult,
-                             date: opts[:date])
+                             date: secondary_date)
       end
     end
 

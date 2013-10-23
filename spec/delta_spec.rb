@@ -19,6 +19,16 @@ describe "Forgetsy::Delta" do
     end
   end
 
+  describe 'retrospective creation' do
+    it 'sets last decay date of secondary set to older than that of the primary' do
+      delta = Forgetsy::Delta.create('foo', t: 1.week)
+      delta.should be_kind_of(Forgetsy::Delta)
+      primary_set = delta.primary_set
+      secondary_set = delta.secondary_set
+      secondary_set.last_decayed_date.should < primary_set.last_decayed_date
+    end
+  end
+
   describe 'fetch' do
     it 'fetches normalised counts when fetching a single bin' do
       delta = Forgetsy::Delta.create('foo', t: 1.week)
