@@ -19,7 +19,7 @@ Gem::Specification.new do |gem|
   gem.test_files    = `git ls-files -- spec/*`.split("\n")
 
   gem.add_runtime_dependency "redis", '> 2.0'
-  gem.add_runtime_dependency "active_support", '~> 3.0.0'
+  gem.add_runtime_dependency "active_support", '>= 3.0.0'
   gem.add_runtime_dependency "i18n", '~> 0.6.5'
   gem.add_development_dependency 'rspec', '~> 2.13.0'
   gem.add_development_dependency 'rake', '~> 0.9'
