@@ -2,8 +2,7 @@ source 'http://rubygems.org'
 ruby '1.9.3'
 
 gem 'redis', '> 2.0'
-gem 'active_support', '>= 3.0.0'
-gem 'i18n', '~> 0.6.5'
+gem 'activesupport', '>= 3.2.0'
 
 group :development do
   gem 'rake', '~> 0.9'
