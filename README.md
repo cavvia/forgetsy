@@ -48,7 +48,7 @@ Providing an explicit date is useful if you are processing data asynchronously. 
 
 You can now consult your follows delta to find your top trending users:
 ```ruby
-puts follows_delta.fetch()
+puts follows_delta.fetch
 ```
 Will print:
 ```ruby

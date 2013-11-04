@@ -62,7 +62,7 @@ module Forgetsy
     # Fetch all scores, or optionally ask for
     # the top n results, or an individual bin.
     #
-    #   delta.fetch()
+    #   delta.fetch
     #   delta.fetch(n: 20)
     #   delta.fetch(bin: 'foo')
     #
