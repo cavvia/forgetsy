@@ -1,11 +1,12 @@
 $:.unshift File.expand_path("../lib", __FILE__)
+require 'forgetsy/version'
 
 Gem::Specification.new do |gem|
   gem.name = "forgetsy"
   gem.homepage = "http://github.com/cavvia/forgetsy"
   gem.license = "MIT"
   gem.summary = %Q{A trending library built on redis.}
-  gem.version = '0.2.3'
+  gem.version = Forgetsy::VERSION
 
   gem.description = <<-EOS
     A scalable trending library that tracks temporal trends
