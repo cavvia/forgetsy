@@ -10,7 +10,7 @@ module Forgetsy
 
     # the time multiplier to use for the
     # normalising set.
-    @@norm_t_mult = 2
+    NORM_T_MULT = 2
 
     def initialize(name, opts = {})
       @name = name
@@ -19,14 +19,14 @@ module Forgetsy
       if opts.key?(:t)
         # we set the last decayed date of the secondary set to older than
         # the primary, in order to support retrospective observations.
-        secondary_date = Time.now - ((Time.now - opts[:date]) * @@norm_t_mult)
+        secondary_date = Time.now - ((Time.now - opts[:date]) * Forgetsy::Delta::NORM_T_MULT)
 
         Forgetsy::Set.create(primary_set_key,
                              t: opts[:t],
                              date: opts[:date])
 
         Forgetsy::Set.create(secondary_set_key,
-                             t: opts[:t] * @@norm_t_mult,
+                             t: opts[:t] * Forgetsy::Delta::NORM_T_MULT,
                              date: secondary_date)
       end
     end
