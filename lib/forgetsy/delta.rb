@@ -76,8 +76,8 @@ module Forgetsy
       bin = opts.key?(:bin) ? opts[:bin] : nil
 
       if bin.nil?
-        counts = primary_set.fetch
-        norm = secondary_set.fetch
+        counts = primary_set.fetch(opts)
+        norm = secondary_set.fetch(opts)
         result = counts.map do |k, v|
           norm_v = norm.fetch(k, nil)
           v = norm_v.nil? ? 0 : v / Float(norm_v)
