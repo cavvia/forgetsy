@@ -7,7 +7,7 @@ Trends are encapsulated by a construct named _Delta_. A _Delta_ consists of two 
 
 ![equation](http://latex.codecogs.com/gif.latex?X_t_1%3DX_t_0%5Ctimes%7Be%5E%7B-%5Clambda%5Ctimes%7Bt%7D%7D%7D)
 
-Where the inverse of the _decay rate_ (lambda) is the mean lifetime of an observation in the set. By normalising such a set by a set with a slower decay rate, we obtain a trending score for each category in a distribution. This score expresses the delta in the rate of observations of a category over the lifetime of the set, as a proportion in the range 0-1.
+Where the inverse of the _decay rate_ (lambda) is the mean lifetime of an observation in the set. By normalising such a set by a set with a slower decay rate, we obtain a trending score for each category in a distribution. This score expresses the delta in the rate of observations of a category over the lifetime of the set, as a proportion in the range 0..1.
 
 Forgetsy avoids the need for manually sliding time windows or explicitly maintaining rolling counts, as observations naturally decay away over time. It's designed for heavy writes and sparse reads, as it implements decay at read time.
 
@@ -54,7 +54,7 @@ Will print:
 ```ruby
 { 'UserFoo' => 0.789, 'UserBar' => 0.367 }
 ```
-Each user is given a dimensionless score in the range [0..1] corresponding to the normalised follows delta over the time period. This expresses the proportion of follows gained by the user over the last week compared to the week before that.
+Each user is given a dimensionless score in the range 0..1 corresponding to the normalised follows delta over the time period. This expresses the proportion of follows gained by the user over the last week compared to the week before that.
 
 Optionally fetch the top _n_ users, or an individual user's trending score:
 ```ruby
