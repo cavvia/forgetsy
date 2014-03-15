@@ -3,17 +3,17 @@ Forgetsy
 
 Forgetsy is a highly scalable trending library designed to track temporal trends in non-stationary categorical distributions. It uses [forget-table](https://github.com/bitly/forgettable/) style data structures which decay observations over time. Using two such sets decaying over different lifetimes, it picks up on changes to recent dynamics in your observations, whilst forgetting historical data responsibly.
 
-Trends are encapsulated by a construct named _Delta_. A _Delta_ consists of two sets of counters, each of which implements exponential decay of the form:
+Trends are encapsulated by a construct named Delta. A Delta consists of two sets of counters, each of which implements exponential decay of the form:
 
 ![equation](http://latex.codecogs.com/gif.latex?X_t_1%3DX_t_0%5Ctimes%7Be%5E%7B-%5Clambda%5Ctimes%7Bt%7D%7D%7D)
 
-Where the inverse of the _decay rate_ (lambda) is the mean lifetime of an observation in the set. By normalising such a set by a set with a slower decay rate, we obtain a trending score for each category in a distribution. This score expresses the delta in the rate of observations of a category over the lifetime of the set, as a proportion in the range 0..1.
+Where the inverse of the _decay rate_ (lambda) is the mean lifetime of an observation in the set. By normalising such a set by a set with half the decay rate, we obtain a trending score for each category in a distribution. This score expresses the change in the rate of observations of a category over the lifetime of the set, as a proportion in the range 0..1.
 
-Forgetsy avoids the need for manually sliding time windows or explicitly maintaining rolling counts, as observations naturally decay away over time. It's designed for heavy writes and sparse reads, as it implements decay at read time.
+Forgetsy removes the need for manually sliding time windows or explicitly maintaining rolling counts, as observations naturally decay away over time. It's designed for heavy writes and sparse reads, as it implements decay at read time.
 
 Each set is implemented as a redis `sorted set`, and keys are scrubbed when a count is decayed to near zero, providing storage efficiency.
 
-Forgetsy handles distributions with upto around 10^6 active categories, receiving hundreds of writes per second, without much fuss. Its scalability is highly dependent on your redis deployment.
+Forgetsy handles distributions with upto around 10<sup>6</sup> active categories, receiving hundreds of writes per second, without much fuss. Its scalability is dependent on your redis deployment.
 
 It requires [redis](https://github.com/antirez/redis) to be running on localhost at the default port (6379).
 
@@ -54,7 +54,7 @@ Will print:
 ```ruby
 { 'UserFoo' => 0.789, 'UserBar' => 0.367 }
 ```
-Each user is given a dimensionless score in the range 0..1 corresponding to the normalised follows delta over the time period. This expresses the proportion of follows gained by the user over the last week compared to the week before that.
+Each user is given a dimensionless score in the range 0..1 corresponding to the normalised follows delta over the time period. This expresses the proportion of follows gained by the user over the last week compared to double that lifetime.
 
 Optionally fetch the top _n_ users, or an individual user's trending score:
 ```ruby
