@@ -2,12 +2,10 @@ require 'redis'
 require 'yaml'
 
 module Forgetsy
-
   # Redis connection.
   class Connection
-
     def self.fetch
-      @@conn ||= Redis.new(self.config)
+      @@conn ||= Redis.new(config)
     end
 
     def self.config

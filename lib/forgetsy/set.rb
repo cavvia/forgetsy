@@ -1,5 +1,4 @@
 module Forgetsy
-
   # A data structure that decays counts exponentially
   # over time. Decay is applied at read time.
   class Set
@@ -26,7 +25,7 @@ module Forgetsy
     # @param datetime opts[date] : a manual date to start decaying from.
     def self.create(name, opts = {})
       unless opts.key?(:t)
-        fail ArgumentError,
+        raise ArgumentError,
              "Please specify a mean lifetime using the 't' option"
       end
 
@@ -123,10 +122,7 @@ module Forgetsy
       # Buffer the limit as special keys may be in
       # top n results.
       buffered_limit = limit
-
-      if limit > 0
-        buffered_limit = limit + special_keys.length
-      end
+      buffered_limit += special_keys.length if limit > 0
 
       set = @conn.zrevrange(@name, 0, buffered_limit, withscores: true)
       filter_special_keys(set)[0..limit]
@@ -141,13 +137,11 @@ module Forgetsy
     end
 
     def filter_special_keys(set)
-      set.select { |k| ! special_keys.include?(k[0]) }
+      set.select { |k| !special_keys.include?(k[0]) }
     end
 
     def valid_incr_date(date)
-      return date && date.to_f > last_decayed_date.to_f
+      date && date.to_f > last_decayed_date.to_f
     end
-
   end
-
 end

@@ -1,13 +1,11 @@
 require_relative './set'
 
 module Forgetsy
-
   # An abstraction used to extract trending scores
   # from two Forgetsy::Set instances decaying at
   # differing rates.
   class Delta
     attr_accessor :name, :conn
-
     # the time multiplier to use for the
     # normalising set.
     NORM_T_MULT = 2
@@ -41,7 +39,7 @@ module Forgetsy
     # @param datetime opts[date] : a manual date to start decaying from.
     def self.create(name, opts = {})
       unless opts.key?(:t)
-        fail ArgumentError,
+        raise ArgumentError,
              "Please specify a mean lifetime using the 't' option"
       end
 
@@ -53,7 +51,7 @@ module Forgetsy
     def self.fetch(name)
       delta = Forgetsy::Delta.new(name)
       unless delta.exists?
-        fail NameError,
+        raise NameError,
              'No delta with that name exists'
       end
       delta
