@@ -1,6 +1,0 @@
-
-redis:
-    host: localhost
-    db: 3
-
-

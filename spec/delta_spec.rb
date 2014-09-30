@@ -3,7 +3,7 @@ require 'spec_helper'
 describe "Forgetsy::Delta" do
 
   before(:each) do
-    @redis = Forgetsy::Connection.fetch
+    @redis = Forgetsy.redis
   end
 
   describe 'creation' do
@@ -42,7 +42,7 @@ describe "Forgetsy::Delta" do
     it 'passes options on to sets' do
       opts = { decay: false }
       mock_set = double()
-      mock_set.should_receive(:fetch).with(opts) { [] }
+      expect(mock_set).to receive(:fetch).with(opts) { [] }
       delta = Forgetsy::Delta.create('foo', t: 1.week)
       delta.incr('foo_bin')
       delta.stub(:primary_set) { mock_set }
