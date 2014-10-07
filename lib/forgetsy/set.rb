@@ -141,7 +141,7 @@ module Forgetsy
     end
 
     def valid_incr_date(date)
-      date && date.to_f > last_decayed_date.to_f
+      date && date.to_f >= last_decayed_date.to_f
     end
   end
 end
