@@ -42,7 +42,7 @@ describe "Forgetsy::Delta" do
     it 'passes options on to sets' do
       opts = { decay: false }
       mock_set = double()
-      expect(mock_set).to receive(:fetch).with(opts) { [] }
+      mock_set.should_receive(:fetch).with(opts) { [] }
       delta = Forgetsy::Delta.create('foo', t: 1.week)
       delta.incr('foo_bin')
       delta.stub(:primary_set) { mock_set }
