@@ -129,7 +129,7 @@ module Forgetsy
     end
 
     def setup_conn
-      @conn ||= Forgetsy::Connection.fetch
+      @conn ||= Forgetsy.redis
     end
 
     def special_keys

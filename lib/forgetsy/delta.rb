@@ -127,7 +127,7 @@ module Forgetsy
     private
 
     def setup_conn
-      @conn ||= Forgetsy::Connection.fetch
+      @conn ||= Forgetsy.redis
     end
 
     def primary_set_key

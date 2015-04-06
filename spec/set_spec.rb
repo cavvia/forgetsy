@@ -3,7 +3,7 @@ require 'spec_helper'
 describe "Forgetsy::Set" do
 
   before(:each) do
-    @redis = Forgetsy::Connection.fetch
+    @redis = Forgetsy.redis
     @set = Forgetsy::Set.create('foo', t: 1.week)
   end
 

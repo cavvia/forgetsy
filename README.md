@@ -26,6 +26,21 @@ Add this to your Gemfile:
 gem 'forgetsy', github: 'cavvia/forgetsy', branch: 'v0.2.5'
 ```
 
+Configuration
+-----
+
+You may want to change the Redis host and port Forgetsy connects to, or
+set various other options at startup.
+
+Forgetsy has a `redis` setter which can be given a string or a Redis
+object. This means if you're already using Redis in your app, Forgetsy
+can re-use the existing connection.
+
+String: `Forgetsy.redis = 'localhost:6379'`
+
+Redis: `Forgetsy.redis = Redis.current`
+
+
 Usage
 -----
 
