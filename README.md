@@ -67,7 +67,7 @@ puts follows_delta.fetch
 ```
 Will print:
 ```ruby
-{ 'UserFoo' => 0.789, 'UserBar' => 0.367 }
+{ 'UserFoo' => 0.667, 'UserBar' => 0.500 }
 ```
 Each user is given a dimensionless score in the range 0..1 corresponding to the normalised follows delta over the time period. This expresses the proportion of follows gained by the user over the last week compared to double that lifetime.
 
