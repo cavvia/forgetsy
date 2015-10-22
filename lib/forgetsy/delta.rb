@@ -36,6 +36,7 @@ module Forgetsy
     # of 1:2.
     #
     # @param float opts[t] : mean lifetime of an observation (secs).
+    # @param bool opts[replay] : whether to replay events retrospectively.
     # @param datetime opts[date] : a manual date to start replaying from.
     def self.create(name, opts = {})
       unless opts.key?(:t)
@@ -43,7 +44,12 @@ module Forgetsy
              "Please specify a mean lifetime using the 't' option"
       end
 
-      opts[:date] ||= Time.now
+      if opts[:replay]
+        opts[:date] = Time.now - opts[:t]
+      else
+        opts[:date] ||= Time.now
+      end
+
       Forgetsy::Delta.new(name, opts)
     end
 

@@ -88,7 +88,7 @@ describe "Forgetsy::Delta" do
     end
 
     it "works with retroactive events" do
-      follows_delta = Forgetsy::Delta.create('user_follows', t: 1.week, date: 1.week.ago)
+      follows_delta = Forgetsy::Delta.create('user_follows', t: 1.week, replay: true)
       follows_delta = Forgetsy::Delta.fetch('user_follows')
       follows_delta.incr('UserFoo', date: 2.weeks.ago)
       follows_delta.incr('UserBar', date: 10.days.ago)

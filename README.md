@@ -23,7 +23,7 @@ Installation
 Add this to your Gemfile:
 
 ```ruby
-gem 'forgetsy', github: 'cavvia/forgetsy', branch: 'v0.2.6'
+gem 'forgetsy', github: 'cavvia/forgetsy', branch: 'v0.2.7'
 ```
 
 Configuration
@@ -50,9 +50,9 @@ follows_delta = Forgetsy::Delta.create('user_follows', t: 1.week)
 ```
 The delta consists of two sets of counters indexed by category identifiers. In this example, the identifiers will be user ids. One set decays over the mean lifetime specified by _t_, and another set decays over double the lifetime.
 
-You can now add observations to the delta, in the form of follow events. Each time a user follows another, you increment the followed user id. You can also do this retrospectively:
+You can now add observations to the delta, in the form of follow events. Each time a user follows another, you increment the followed user id. You can also do this retrospectively, using the `replay` option:
 ```ruby
-follows_delta = Forgetsy::Delta.fetch('user_follows')
+follows_delta = Forgetsy::Delta.create('user_follows', t: 1.week, replay: true)
 follows_delta.incr('UserFoo', date: 2.weeks.ago)
 follows_delta.incr('UserBar', date: 10.days.ago)
 follows_delta.incr('UserBar', date: 1.week.ago)
