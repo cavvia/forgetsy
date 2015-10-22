@@ -46,13 +46,13 @@ Usage
 
 Take, for example, a social network in which users can follow each other. You want to track trending users. You construct a one week delta, to capture trends in your follows data over one week periods:
 ```ruby
-follows_delta = Forgetsy::Delta.create('user_follows', t: 1.week)
+follows_delta = Forgetsy::Delta.create('user_follows', t: 1.week, replay: true)
 ```
 The delta consists of two sets of counters indexed by category identifiers. In this example, the identifiers will be user ids. One set decays over the mean lifetime specified by _t_, and another set decays over double the lifetime.
 
-You can now add observations to the delta, in the form of follow events. Each time a user follows another, you increment the followed user id. You can also do this retrospectively, using the `replay` option:
+You can now add observations to the delta, in the form of follow events. Each time a user follows another, you increment the followed user id. We can also do this retrospectively, since we have passed the `replay` option to the factory method above:
 ```ruby
-follows_delta = Forgetsy::Delta.create('user_follows', t: 1.week, replay: true)
+follows_delta = Forgetsy::Delta.fetch('user_follows')
 follows_delta.incr('UserFoo', date: 2.weeks.ago)
 follows_delta.incr('UserBar', date: 10.days.ago)
 follows_delta.incr('UserBar', date: 1.week.ago)
