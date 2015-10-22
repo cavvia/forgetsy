@@ -103,5 +103,4 @@ describe "Forgetsy::Set" do
       @set.fetch.values.length.should == 0
     end
   end
-
 end

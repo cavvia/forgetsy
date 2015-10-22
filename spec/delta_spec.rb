@@ -86,7 +86,18 @@ describe "Forgetsy::Delta" do
       all_scores = delta.fetch()
       all_scores.length.should == 3
     end
-  end
 
+    it "works with retroactive events" do
+      follows_delta = Forgetsy::Delta.create('user_follows', t: 1.week, date: 1.week.ago)
+      follows_delta = Forgetsy::Delta.fetch('user_follows')
+      follows_delta.incr('UserFoo', date: 2.weeks.ago)
+      follows_delta.incr('UserBar', date: 10.days.ago)
+      follows_delta.incr('UserBar', date: 1.week.ago)
+      follows_delta.incr('UserFoo', date: 1.day.ago)
+      follows_delta.incr('UserFoo')
+      follows_delta.fetch['UserFoo'].round(2).should == 0.67
+      follows_delta.fetch['UserBar'].round(2).should == 0.50
+    end
+  end
 
 end

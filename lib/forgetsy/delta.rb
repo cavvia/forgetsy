@@ -36,7 +36,7 @@ module Forgetsy
     # of 1:2.
     #
     # @param float opts[t] : mean lifetime of an observation (secs).
-    # @param datetime opts[date] : a manual date to start decaying from.
+    # @param datetime opts[date] : a manual date to start replaying from.
     def self.create(name, opts = {})
       unless opts.key?(:t)
         raise ArgumentError,
