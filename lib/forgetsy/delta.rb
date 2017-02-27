@@ -75,8 +75,7 @@ module Forgetsy
 
       # do not delegate the limit to sets
       # as we want to apply the limit after norm.
-      limit = opts[:n]
-      opts.delete(:n)
+      limit = opts.delete(:n)
       bin = opts.key?(:bin) ? opts[:bin] : nil
 
       if bin.nil?
@@ -93,15 +92,15 @@ module Forgetsy
         norm = secondary_set.fetch(opts)
 
         if norm[bin].nil?
-          result = [bin, nil]
+          result = [[bin, nil]]
         else
           norm_v = counts[bin] / Float(norm[bin])
-          result = [bin, norm_v]
+          result = [[bin, norm_v]]
         end
       end
 
       result = result[0..limit - 1] unless limit.nil?
-      Hash[*result.flatten]
+      Hash[result.map{ |r| [r[0], r[1]] }]
     end
 
     # Increment a bin. Additionally supply a date option

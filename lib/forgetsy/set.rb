@@ -58,12 +58,12 @@ module Forgetsy
       scrub if opts.fetch(:scrub, true)
 
       if opts.key?(:bin)
-        result = [opts[:bin], @conn.zscore(@name, opts[:bin])]
+        result = [[opts[:bin], @conn.zscore(@name, opts[:bin])]]
       else
         result = fetch_raw(limit: limit)
       end
 
-      Hash[*result.flatten]
+      Hash[result.map{ |r| [r[0], r[1]] }]
     end
 
     # Apply exponential time decay and

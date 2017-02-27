@@ -80,6 +80,13 @@ describe "Forgetsy::Set" do
       @set.incr_by('bar_bin', 1)
       @set.fetch(decay: false).should == { 'foo_bin' => 2.0, 'bar_bin' => 1.0 }
     end
+
+    it "doesn't error on large set cardinality" do
+      @set.stub(:fetch_raw) do |args|
+        (1..70000).to_a.map{|i| [i.to_s, 1.0]}
+      end
+      expect{@set.fetch()}.to_not raise_error(SystemStackError)
+    end
   end
 
   describe 'decay' do
