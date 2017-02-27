@@ -31,12 +31,18 @@ describe "Forgetsy::Delta" do
 
   describe 'fetch' do
     it 'fetches normalised counts when fetching a single bin' do
-      delta = Forgetsy::Delta.create('foo', t: 1.week)
-      delta.incr('foo_bin')
-      delta.incr('foo_bin')
-      delta.incr('bar_bin')
-      delta.fetch(bin: 'foo_bin').values.first.round(1).should == 1.0
-      delta.fetch(bin: 'bar_bin').values.first.round(1).should == 1.0
+      now = Time.now
+      delta = nil
+      Timecop.freeze(now) do
+        delta = Forgetsy::Delta.create('foo', t: 1.week)
+      end
+      Timecop.freeze(now + 1.second) do
+        delta.incr('foo_bin')
+        delta.incr('foo_bin')
+        delta.incr('bar_bin')
+        delta.fetch(bin: 'foo_bin').values.first.should == 0.999999173280765
+        delta.fetch(bin: 'bar_bin').values.first.should == 0.999999173280765
+      end
     end
 
     it 'passes options on to sets' do
@@ -65,15 +71,21 @@ describe "Forgetsy::Delta" do
     end
 
     it 'fetches normalised counts when fetching all scores' do
-      delta = Forgetsy::Delta.create('foo', t: 1.week)
-      delta.incr('foo_bin')
-      delta.incr('foo_bin')
-      delta.incr('bar_bin')
-      all_scores = delta.fetch()
-      all_scores.keys[0].should == 'foo_bin'
-      all_scores.keys[1].should == 'bar_bin'
-      all_scores.values[0].round(1).should == 1.0
-      all_scores.values[1].round(1).should == 1.0
+      now = Time.now
+      delta = nil
+      Timecop.freeze(now) do
+        delta = Forgetsy::Delta.create('foo', t: 1.week)
+      end
+      Timecop.freeze(now + 1.second) do
+        delta.incr('foo_bin')
+        delta.incr('foo_bin')
+        delta.incr('bar_bin')
+        all_scores = delta.fetch()
+        all_scores.keys[0].should == 'foo_bin'
+        all_scores.keys[1].should == 'bar_bin'
+        all_scores.values[0].should == 0.999999173280765
+        all_scores.values[1].should == 0.999999173280765
+      end
     end
 
     it 'limits results when using :n option' do
@@ -88,15 +100,20 @@ describe "Forgetsy::Delta" do
     end
 
     it "works with retroactive events" do
-      follows_delta = Forgetsy::Delta.create('user_follows', t: 1.week, replay: true)
-      follows_delta = Forgetsy::Delta.fetch('user_follows')
-      follows_delta.incr('UserFoo', date: 2.weeks.ago)
-      follows_delta.incr('UserBar', date: 10.days.ago)
-      follows_delta.incr('UserBar', date: 1.week.ago)
-      follows_delta.incr('UserFoo', date: 1.day.ago)
-      follows_delta.incr('UserFoo')
-      follows_delta.fetch['UserFoo'].round(2).should == 0.67
-      follows_delta.fetch['UserBar'].round(2).should == 0.50
+      now = Time.now
+      Timecop.freeze(now) do
+        follows_delta = Forgetsy::Delta.create('user_follows', t: 1.week, replay: true)
+      end
+      Timecop.freeze(now + 1.second) do
+        follows_delta = Forgetsy::Delta.fetch('user_follows')
+        follows_delta.incr('UserFoo', date: 2.weeks.ago)
+        follows_delta.incr('UserBar', date: 10.days.ago)
+        follows_delta.incr('UserBar', date: 1.week.ago)
+        follows_delta.incr('UserFoo', date: 1.day.ago)
+        follows_delta.incr('UserFoo')
+        follows_delta.fetch['UserFoo'].should == 0.66666611552051
+        follows_delta.fetch['UserBar'].should == 0.4999995866403826
+      end
     end
   end
 

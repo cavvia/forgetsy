@@ -76,23 +76,25 @@ describe "Forgetsy::Set" do
 
   describe 'decay' do
     it 'decays counts exponentially' do
-      manual_date = 2.days.ago
       now = Time.now
-      time_delta = now - manual_date
-      lifetime = 1.week
-      foo, bar = 2, 10
+      Timecop.freeze(now) do
+        manual_date = 2.days.ago
+        time_delta = now - manual_date
+        lifetime = 1.week
+        foo, bar = 2, 10
 
-      rate = 1 / Float(lifetime)
-      @set = Forgetsy::Set.create('foo', t: lifetime, date: manual_date)
-      @set.incr_by('foo_bin', foo)
-      @set.incr_by('bar_bin', bar)
+        rate = 1 / Float(lifetime)
+        @set = Forgetsy::Set.create('foo', t: lifetime, date: manual_date)
+        @set.incr_by('foo_bin', foo)
+        @set.incr_by('bar_bin', bar)
 
-      decayed_foo = foo * Math.exp(- rate * time_delta)
-      decayed_bar = bar * Math.exp(- rate * time_delta)
+        decayed_foo = foo * Math.exp(- rate * time_delta)
+        decayed_bar = bar * Math.exp(- rate * time_delta)
 
-      @set.decay(date: now)
-      @set.fetch(bin: 'foo_bin').values.first.round(3).should == decayed_foo.round(3)
-      @set.fetch(bin: 'bar_bin').values.first.round(3).should == decayed_bar.round(3)
+        @set.decay(date: now)
+        @set.fetch(bin: 'foo_bin').values.first.should == decayed_foo
+        @set.fetch(bin: 'bar_bin').values.first.should == decayed_bar
+      end
     end
   end
 
