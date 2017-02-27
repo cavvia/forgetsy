@@ -22,6 +22,7 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency 'redis', '> 2.0'
   gem.add_runtime_dependency 'redis-namespace', '>= 1.1.0'
   gem.add_runtime_dependency 'activesupport', '>= 3.2.0'
-  gem.add_development_dependency 'rspec', '~> 2.13.0'
-  gem.add_development_dependency 'rake', '~> 0.9'
+  gem.add_development_dependency 'rspec'
+  gem.add_development_dependency 'rake'
+  gem.add_development_dependency 'fakeredis'
 end
