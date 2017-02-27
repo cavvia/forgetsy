@@ -4,11 +4,11 @@ module Forgetsy
   class Set
     attr_accessor :name, :conn
 
-    @@last_decayed_key = '_last_decay'
-    @@lifetime_key = '_t'
+    LAST_DECAYED_KEY = "_last_decay".freeze
+    LIFETIME_KEY = "_t".freeze
 
     # scrub keys scoring lower than this.
-    @@hi_pass_filter = 0.0001
+    HIGH_PASS_FILTER = 0.0001
 
     def initialize(name)
       @name = name
@@ -26,7 +26,7 @@ module Forgetsy
     def self.create(name, opts = {})
       unless opts.key?(:t)
         raise ArgumentError,
-             "Please specify a mean lifetime using the 't' option"
+             "Please specify a mean lifetime using the 't' option".freeze
       end
 
       date = opts[:date] || Time.now
@@ -84,7 +84,7 @@ module Forgetsy
     end
 
     def scrub
-      @conn.zremrangebyscore(@name, '-inf', @@hi_pass_filter)
+      @conn.zremrangebyscore(@name, "-inf".freeze, HIGH_PASS_FILTER)
     end
 
     def incr(bin, opts = {})
@@ -98,19 +98,19 @@ module Forgetsy
     end
 
     def last_decayed_date
-      @conn.zscore(@name, @@last_decayed_key)
+      @conn.zscore(@name, LAST_DECAYED_KEY)
     end
 
     def lifetime
-      @conn.zscore(@name, @@lifetime_key)
+      @conn.zscore(@name, LIFETIME_KEY)
     end
 
     def create_lifetime_key(t)
-      @conn.zadd(@name, t.to_f, @@lifetime_key)
+      @conn.zadd(@name, t.to_f, LIFETIME_KEY)
     end
 
     def update_decay_date(date)
-      @conn.zadd(@name, date.to_f, @@last_decayed_key)
+      @conn.zadd(@name, date.to_f, LAST_DECAYED_KEY)
     end
 
     private
@@ -133,7 +133,7 @@ module Forgetsy
     end
 
     def special_keys
-      [@@lifetime_key, @@last_decayed_key]
+      [LIFETIME_KEY, LAST_DECAYED_KEY]
     end
 
     def filter_special_keys(set)

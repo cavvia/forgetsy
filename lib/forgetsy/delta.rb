@@ -41,7 +41,7 @@ module Forgetsy
     def self.create(name, opts = {})
       unless opts.key?(:t)
         raise ArgumentError,
-             "Please specify a mean lifetime using the 't' option"
+             "Please specify a mean lifetime using the 't' option".freeze
       end
 
       if opts[:replay]
@@ -58,7 +58,7 @@ module Forgetsy
       delta = Forgetsy::Delta.new(name)
       unless delta.exists?
         raise NameError,
-             'No delta with that name exists'
+             "No delta with that name exists".freeze
       end
       delta
     end
