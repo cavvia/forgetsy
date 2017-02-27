@@ -1,5 +1,3 @@
-require 'active_support/core_ext'
-
 require 'forgetsy/set'
 require 'forgetsy/delta'
 

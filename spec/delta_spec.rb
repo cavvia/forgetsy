@@ -8,7 +8,7 @@ describe "Forgetsy::Delta" do
 
   describe 'creation' do
     it 'creates two set instances with appropriate keys' do
-      delta = Forgetsy::Delta.create('foo', t: 1.week)
+      delta = Forgetsy::Delta.create('foo', t: WEEK)
       delta.should be_kind_of(Forgetsy::Delta)
       set = delta.primary_set
       set.should be_kind_of(Forgetsy::Set)
@@ -21,7 +21,7 @@ describe "Forgetsy::Delta" do
 
   describe 'retrospective creation' do
     it 'sets last decay date of secondary set to older than that of the primary' do
-      delta = Forgetsy::Delta.create('foo', t: 1.week)
+      delta = Forgetsy::Delta.create('foo', t: WEEK)
       delta.should be_kind_of(Forgetsy::Delta)
       primary_set = delta.primary_set
       secondary_set = delta.secondary_set
@@ -34,9 +34,9 @@ describe "Forgetsy::Delta" do
       now = Time.now
       delta = nil
       Timecop.freeze(now) do
-        delta = Forgetsy::Delta.create('foo', t: 1.week)
+        delta = Forgetsy::Delta.create('foo', t: WEEK)
       end
-      Timecop.freeze(now + 1.second) do
+      Timecop.freeze(now + 1) do
         delta.incr('foo_bin')
         delta.incr('foo_bin')
         delta.incr('bar_bin')
@@ -49,14 +49,14 @@ describe "Forgetsy::Delta" do
       opts = { decay: false }
       mock_set = double()
       mock_set.should_receive(:fetch).with(opts) { [] }
-      delta = Forgetsy::Delta.create('foo', t: 1.week)
+      delta = Forgetsy::Delta.create('foo', t: WEEK)
       delta.incr('foo_bin')
       delta.stub(:primary_set) { mock_set }
       delta.fetch(opts)
     end
 
     it 'returns nil when trying to fetch a non-existent bin' do
-      delta = Forgetsy::Delta.create('foo', t: 1.week)
+      delta = Forgetsy::Delta.create('foo', t: WEEK)
       delta.fetch(bin: 'foo_bin').should == {'foo_bin' => nil }
     end
 
@@ -74,9 +74,9 @@ describe "Forgetsy::Delta" do
       now = Time.now
       delta = nil
       Timecop.freeze(now) do
-        delta = Forgetsy::Delta.create('foo', t: 1.week)
+        delta = Forgetsy::Delta.create('foo', t: WEEK)
       end
-      Timecop.freeze(now + 1.second) do
+      Timecop.freeze(now + 1) do
         delta.incr('foo_bin')
         delta.incr('foo_bin')
         delta.incr('bar_bin')
@@ -89,7 +89,7 @@ describe "Forgetsy::Delta" do
     end
 
     it 'limits results when using :n option' do
-      delta = Forgetsy::Delta.create('foo', t: 1.week)
+      delta = Forgetsy::Delta.create('foo', t: WEEK)
       delta.incr_by('foo_bin', 3)
       delta.incr_by('bar_bin', 2)
       delta.incr('quux_bin')
@@ -102,14 +102,14 @@ describe "Forgetsy::Delta" do
     it "works with retroactive events" do
       now = Time.now
       Timecop.freeze(now) do
-        follows_delta = Forgetsy::Delta.create('user_follows', t: 1.week, replay: true)
+        follows_delta = Forgetsy::Delta.create('user_follows', t: WEEK, replay: true)
       end
-      Timecop.freeze(now + 1.second) do
+      Timecop.freeze(now + 1) do
         follows_delta = Forgetsy::Delta.fetch('user_follows')
-        follows_delta.incr('UserFoo', date: 2.weeks.ago)
-        follows_delta.incr('UserBar', date: 10.days.ago)
-        follows_delta.incr('UserBar', date: 1.week.ago)
-        follows_delta.incr('UserFoo', date: 1.day.ago)
+        follows_delta.incr('UserFoo', date: Time.now - 2 * WEEK)
+        follows_delta.incr('UserBar', date: Time.now - 10 * DAY)
+        follows_delta.incr('UserBar', date: Time.now - 1 * WEEK)
+        follows_delta.incr('UserFoo', date: Time.now - 1 * DAY)
         follows_delta.incr('UserFoo')
         follows_delta.fetch['UserFoo'].should == 0.66666611552051
         follows_delta.fetch['UserBar'].should == 0.4999995866403826
