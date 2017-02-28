@@ -7,15 +7,22 @@ describe "Forgetsy::Delta" do
   end
 
   describe 'creation' do
-    it 'creates two set instances with appropriate keys' do
-      delta = Forgetsy::Delta.create('foo', t: WEEK)
+    it "creates two set instances with appropriate Redis metadata" do
+      now = Time.now
+      delta = Timecop.freeze(now) do
+        Forgetsy::Delta.create('foo', t: WEEK)
+      end
       delta.should be_kind_of(Forgetsy::Delta)
       set = delta.primary_set
       set.should be_kind_of(Forgetsy::Set)
-      @redis.exists(set.name).should == true
       set = delta.secondary_set
       set.should be_kind_of(Forgetsy::Set)
-      @redis.exists(set.name).should == true
+      expect(@redis.hgetall("_forgetsy")).to eq({
+        "foo:_last_decay"=>now.to_f.to_s,
+        "foo:_t"=>"604800.0",
+        "foo_2t:_last_decay"=>now.to_f.to_s,
+        "foo_2t:_t"=>"1209600.0",
+      })
     end
   end
 

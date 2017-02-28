@@ -4,12 +4,15 @@ describe "Forgetsy::Set" do
 
   before(:each) do
     @redis = Forgetsy.redis
-    @set = Forgetsy::Set.create('foo', t: WEEK)
+    @freezetime = Time.now
+    Timecop.freeze(@freezetime) do
+      @set = Forgetsy::Set.create('foo', t: WEEK)
+    end
   end
 
   describe 'creation' do
-    it 'creates a redis set with the appropriate name and stores metadata' do
-      @redis.zcount('foo', '-inf', '+inf').should == 2
+    it "creates the metadata hash" do
+      expect(@redis.hgetall("_forgetsy")).to eq({"foo:_last_decay"=>@freezetime.to_f.to_s, "foo:_t"=>"604800.0"})
     end
 
     it 'stores the last decayed date in a special key upon creation' do

@@ -6,6 +6,7 @@ module Forgetsy
 
     LAST_DECAYED_KEY = "_last_decay".freeze
     LIFETIME_KEY = "_t".freeze
+    METADATA_KEY = "_forgetsy".freeze
 
     # scrub keys scoring lower than this.
     HIGH_PASS_FILTER = 0.0001
@@ -69,6 +70,7 @@ module Forgetsy
     # Apply exponential time decay and
     # update the last decay time.
     def decay(opts = {})
+      last_decayed_date, lifetime = last_decayed_date_and_lifetime
       t0 = last_decayed_date
       t1 = opts.fetch(:date, Time.now).to_f
       delta_t = t1 - t0
@@ -98,19 +100,30 @@ module Forgetsy
     end
 
     def last_decayed_date
-      @conn.zscore(@name, LAST_DECAYED_KEY)
+      @conn.hget(METADATA_KEY, metadata_key(LAST_DECAYED_KEY)).to_f
     end
 
     def lifetime
-      @conn.zscore(@name, LIFETIME_KEY)
+      @conn.hget(METADATA_KEY, metadata_key(LIFETIME_KEY)).to_f
+    end
+
+    def last_decayed_date_and_lifetime
+      @conn.hmget(
+        METADATA_KEY, metadata_key(LAST_DECAYED_KEY),
+        metadata_key(LIFETIME_KEY)
+      ).map(&:to_f)
     end
 
     def create_lifetime_key(t)
-      @conn.zadd(@name, t.to_f, LIFETIME_KEY)
+      @conn.hset(METADATA_KEY, metadata_key(LIFETIME_KEY), t.to_f)
     end
 
     def update_decay_date(date)
-      @conn.zadd(@name, date.to_f, LAST_DECAYED_KEY)
+      @conn.hset(METADATA_KEY, metadata_key(LAST_DECAYED_KEY), date.to_f)
+    end
+
+    def metadata_key(key)
+      "#{@name}:#{key}"
     end
 
     private
@@ -118,26 +131,11 @@ module Forgetsy
     # Fetch the set without decay applied.
     def fetch_raw(opts = {})
       limit = opts[:limit] || -1
-
-      # Buffer the limit as special keys may be in
-      # top n results.
-      buffered_limit = limit
-      buffered_limit += special_keys.length if limit > 0
-
-      set = @conn.zrevrange(@name, 0, buffered_limit, withscores: true)
-      filter_special_keys(set)[0..limit]
+      @conn.zrevrange(@name, 0, limit, withscores: true)
     end
 
     def setup_conn
       @conn ||= Forgetsy.redis
-    end
-
-    def special_keys
-      [LIFETIME_KEY, LAST_DECAYED_KEY]
-    end
-
-    def filter_special_keys(set)
-      set.select { |k| !special_keys.include?(k[0]) }
     end
 
     def valid_incr_date(date)

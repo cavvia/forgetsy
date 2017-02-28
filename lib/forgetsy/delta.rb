@@ -126,7 +126,7 @@ module Forgetsy
     end
 
     def exists?
-      @conn.exists(@name)
+      @conn.hexists(Forgetsy::Set::METADATA_KEY, "#{primary_set_key}:#{Forgetsy::Set::LIFETIME_KEY}")
     end
 
     private
