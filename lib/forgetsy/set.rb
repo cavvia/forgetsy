@@ -2,7 +2,7 @@ module Forgetsy
   # A data structure that decays counts exponentially
   # over time. Decay is applied at read time.
   class Set
-    attr_accessor :name, :conn
+    attr_accessor :name
 
     LAST_DECAYED_KEY = "_last_decay".freeze
     LIFETIME_KEY = "_t".freeze
@@ -13,7 +13,6 @@ module Forgetsy
 
     def initialize(name)
       @name = name
-      setup_conn
     end
 
     # Factory method. Use this instead of direct
@@ -59,7 +58,7 @@ module Forgetsy
       scrub if opts.fetch(:scrub, true)
 
       if opts.key?(:bin)
-        result = [[opts[:bin], @conn.zscore(@name, opts[:bin])]]
+        result = [[opts[:bin], redis.zscore(@name, opts[:bin])]]
       else
         result = fetch_raw(limit: limit)
       end
@@ -76,50 +75,50 @@ module Forgetsy
       delta_t = t1 - t0
       set = fetch_raw
       rate = 1 / Float(lifetime)
-      @conn.pipelined do
+      redis.pipelined do
         set.each do |k, v|
           new_v = v * Math.exp(- delta_t * rate)
-          @conn.zadd(@name, new_v, k)
+          redis.zadd(@name, new_v, k)
         end
         update_decay_date(Time.now)
       end
     end
 
     def scrub
-      @conn.zremrangebyscore(@name, "-inf".freeze, HIGH_PASS_FILTER)
+      redis.zremrangebyscore(@name, "-inf".freeze, HIGH_PASS_FILTER)
     end
 
     def incr(bin, opts = {})
       date = opts.fetch(:date, Time.now)
-      @conn.zincrby(@name, 1, bin) if valid_incr_date(date)
+      redis.zincrby(@name, 1, bin) if valid_incr_date(date)
     end
 
     def incr_by(bin, by, opts = {})
       date = opts.fetch(:date, Time.now)
-      @conn.zincrby(@name, by, bin) if valid_incr_date(date)
+      redis.zincrby(@name, by, bin) if valid_incr_date(date)
     end
 
     def last_decayed_date
-      @conn.hget(METADATA_KEY, metadata_key(LAST_DECAYED_KEY)).to_f
+      redis.hget(METADATA_KEY, metadata_key(LAST_DECAYED_KEY)).to_f
     end
 
     def lifetime
-      @conn.hget(METADATA_KEY, metadata_key(LIFETIME_KEY)).to_f
+      redis.hget(METADATA_KEY, metadata_key(LIFETIME_KEY)).to_f
     end
 
     def last_decayed_date_and_lifetime
-      @conn.hmget(
+      redis.hmget(
         METADATA_KEY, metadata_key(LAST_DECAYED_KEY),
         metadata_key(LIFETIME_KEY)
       ).map(&:to_f)
     end
 
     def create_lifetime_key(t)
-      @conn.hset(METADATA_KEY, metadata_key(LIFETIME_KEY), t.to_f)
+      redis.hset(METADATA_KEY, metadata_key(LIFETIME_KEY), t.to_f)
     end
 
     def update_decay_date(date)
-      @conn.hset(METADATA_KEY, metadata_key(LAST_DECAYED_KEY), date.to_f)
+      redis.hset(METADATA_KEY, metadata_key(LAST_DECAYED_KEY), date.to_f)
     end
 
     def metadata_key(key)
@@ -128,14 +127,14 @@ module Forgetsy
 
     private
 
+    def redis(*args, &blk)
+      Forgetsy.redis(*args, &blk)
+    end
+
     # Fetch the set without decay applied.
     def fetch_raw(opts = {})
       limit = opts[:limit] || -1
-      @conn.zrevrange(@name, 0, limit, withscores: true)
-    end
-
-    def setup_conn
-      @conn ||= Forgetsy.redis
+      redis.zrevrange(@name, 0, limit, withscores: true)
     end
 
     def valid_incr_date(date)

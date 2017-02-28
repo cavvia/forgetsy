@@ -5,14 +5,13 @@ module Forgetsy
   # from two Forgetsy::Set instances decaying at
   # differing rates.
   class Delta
-    attr_accessor :name, :conn
+    attr_accessor :name
     # the time multiplier to use for the
     # normalising set.
     NORM_T_MULT = 2
 
     def initialize(name, opts = {})
       @name = name
-      setup_conn
 
       if opts.key?(:t)
         # we set the last decayed date of the secondary set to older than
@@ -126,14 +125,13 @@ module Forgetsy
     end
 
     def exists?
-      @conn.hexists(Forgetsy::Set::METADATA_KEY, "#{primary_set_key}:#{Forgetsy::Set::LIFETIME_KEY}")
+      Forgetsy.redis.hexists(
+        Forgetsy::Set::METADATA_KEY,
+        "#{primary_set_key}:#{Forgetsy::Set::LIFETIME_KEY}"
+      )
     end
 
     private
-
-    def setup_conn
-      @conn ||= Forgetsy.redis
-    end
 
     def primary_set_key
       @name
