@@ -2,17 +2,17 @@ module Forgetsy
   # A data structure that decays counts exponentially
   # over time. Decay is applied at read time.
   class Set
-    attr_accessor :name, :conn
+    attr_accessor :name
 
-    @@last_decayed_key = '_last_decay'
-    @@lifetime_key = '_t'
+    LAST_DECAYED_KEY = "_last_decay".freeze
+    LIFETIME_KEY = "_t".freeze
+    METADATA_KEY = "_forgetsy".freeze
 
     # scrub keys scoring lower than this.
-    @@hi_pass_filter = 0.0001
+    HIGH_PASS_FILTER = 0.0001
 
     def initialize(name)
       @name = name
-      setup_conn
     end
 
     # Factory method. Use this instead of direct
@@ -26,7 +26,7 @@ module Forgetsy
     def self.create(name, opts = {})
       unless opts.key?(:t)
         raise ArgumentError,
-             "Please specify a mean lifetime using the 't' option"
+             "Please specify a mean lifetime using the 't' option".freeze
       end
 
       date = opts[:date] || Time.now
@@ -58,90 +58,87 @@ module Forgetsy
       scrub if opts.fetch(:scrub, true)
 
       if opts.key?(:bin)
-        result = [opts[:bin], @conn.zscore(@name, opts[:bin])]
+        result = [[opts[:bin], redis.zscore(@name, opts[:bin])]]
       else
         result = fetch_raw(limit: limit)
       end
 
-      Hash[*result.flatten]
+      Hash[result.map{ |r| [r[0], r[1]] }]
     end
 
     # Apply exponential time decay and
     # update the last decay time.
     def decay(opts = {})
+      last_decayed_date, lifetime = last_decayed_date_and_lifetime
       t0 = last_decayed_date
       t1 = opts.fetch(:date, Time.now).to_f
       delta_t = t1 - t0
       set = fetch_raw
       rate = 1 / Float(lifetime)
-      @conn.pipelined do
+      redis.pipelined do
         set.each do |k, v|
           new_v = v * Math.exp(- delta_t * rate)
-          @conn.zadd(@name, new_v, k)
+          redis.zadd(@name, new_v, k)
         end
         update_decay_date(Time.now)
       end
     end
 
     def scrub
-      @conn.zremrangebyscore(@name, '-inf', @@hi_pass_filter)
+      redis.zremrangebyscore(@name, "-inf".freeze, HIGH_PASS_FILTER)
     end
 
     def incr(bin, opts = {})
       date = opts.fetch(:date, Time.now)
-      @conn.zincrby(@name, 1, bin) if valid_incr_date(date)
+      redis.zincrby(@name, 1, bin) if valid_incr_date(date)
     end
 
     def incr_by(bin, by, opts = {})
       date = opts.fetch(:date, Time.now)
-      @conn.zincrby(@name, by, bin) if valid_incr_date(date)
+      redis.zincrby(@name, by, bin) if valid_incr_date(date)
     end
 
     def last_decayed_date
-      @conn.zscore(@name, @@last_decayed_key)
+      redis.hget(METADATA_KEY, metadata_key(LAST_DECAYED_KEY)).to_f
     end
 
     def lifetime
-      @conn.zscore(@name, @@lifetime_key)
+      redis.hget(METADATA_KEY, metadata_key(LIFETIME_KEY)).to_f
+    end
+
+    def last_decayed_date_and_lifetime
+      redis.hmget(
+        METADATA_KEY, metadata_key(LAST_DECAYED_KEY),
+        metadata_key(LIFETIME_KEY)
+      ).map(&:to_f)
     end
 
     def create_lifetime_key(t)
-      @conn.zadd(@name, t.to_f, @@lifetime_key)
+      redis.hset(METADATA_KEY, metadata_key(LIFETIME_KEY), t.to_f)
     end
 
     def update_decay_date(date)
-      @conn.zadd(@name, date.to_f, @@last_decayed_key)
+      redis.hset(METADATA_KEY, metadata_key(LAST_DECAYED_KEY), date.to_f)
+    end
+
+    def metadata_key(key)
+      "#{@name}:#{key}"
     end
 
     private
 
+    def redis(*args, &blk)
+      Forgetsy.redis(*args, &blk)
+    end
+
     # Fetch the set without decay applied.
     def fetch_raw(opts = {})
       limit = opts[:limit] || -1
-
-      # Buffer the limit as special keys may be in
-      # top n results.
-      buffered_limit = limit
-      buffered_limit += special_keys.length if limit > 0
-
-      set = @conn.zrevrange(@name, 0, buffered_limit, withscores: true)
-      filter_special_keys(set)[0..limit]
-    end
-
-    def setup_conn
-      @conn ||= Forgetsy.redis
-    end
-
-    def special_keys
-      [@@lifetime_key, @@last_decayed_key]
-    end
-
-    def filter_special_keys(set)
-      set.select { |k| !special_keys.include?(k[0]) }
+      redis.zrevrange(@name, 0, limit, withscores: true)
     end
 
     def valid_incr_date(date)
-      date && date.to_f > last_decayed_date.to_f
+      date && date.to_f >= last_decayed_date.to_f
     end
   end
 end

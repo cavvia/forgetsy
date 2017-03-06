@@ -5,14 +5,13 @@ module Forgetsy
   # from two Forgetsy::Set instances decaying at
   # differing rates.
   class Delta
-    attr_accessor :name, :conn
+    attr_accessor :name
     # the time multiplier to use for the
     # normalising set.
     NORM_T_MULT = 2
 
     def initialize(name, opts = {})
       @name = name
-      setup_conn
 
       if opts.key?(:t)
         # we set the last decayed date of the secondary set to older than
@@ -41,7 +40,7 @@ module Forgetsy
     def self.create(name, opts = {})
       unless opts.key?(:t)
         raise ArgumentError,
-             "Please specify a mean lifetime using the 't' option"
+             "Please specify a mean lifetime using the 't' option".freeze
       end
 
       if opts[:replay]
@@ -58,7 +57,7 @@ module Forgetsy
       delta = Forgetsy::Delta.new(name)
       unless delta.exists?
         raise NameError,
-             'No delta with that name exists'
+             "No delta with that name exists".freeze
       end
       delta
     end
@@ -75,8 +74,7 @@ module Forgetsy
 
       # do not delegate the limit to sets
       # as we want to apply the limit after norm.
-      limit = opts[:n]
-      opts.delete(:n)
+      limit = opts.delete(:n)
       bin = opts.key?(:bin) ? opts[:bin] : nil
 
       if bin.nil?
@@ -93,15 +91,15 @@ module Forgetsy
         norm = secondary_set.fetch(opts)
 
         if norm[bin].nil?
-          result = [bin, nil]
+          result = [[bin, nil]]
         else
           norm_v = counts[bin] / Float(norm[bin])
-          result = [bin, norm_v]
+          result = [[bin, norm_v]]
         end
       end
 
       result = result[0..limit - 1] unless limit.nil?
-      Hash[*result.flatten]
+      Hash[result.map{ |r| [r[0], r[1]] }]
     end
 
     # Increment a bin. Additionally supply a date option
@@ -127,14 +125,13 @@ module Forgetsy
     end
 
     def exists?
-      @conn.exists(@name)
+      Forgetsy.redis.hexists(
+        Forgetsy::Set::METADATA_KEY,
+        "#{primary_set_key}:#{Forgetsy::Set::LIFETIME_KEY}"
+      )
     end
 
     private
-
-    def setup_conn
-      @conn ||= Forgetsy.redis
-    end
 
     def primary_set_key
       @name

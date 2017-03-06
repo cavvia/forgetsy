@@ -26,20 +26,39 @@ Add this to your Gemfile:
 gem 'forgetsy', github: 'cavvia/forgetsy', branch: 'v0.2.7'
 ```
 
-Configuration
------
+## Setup
 
-You may want to change the Redis host and port Forgetsy connects to, or
-set various other options at startup.
+Forgetsy will default to using `Redis.current` for Redis commands, but can be
+configured to use a specific Redis client:
 
-Forgetsy has a `redis` setter which can be given a string or a Redis
-object. This means if you're already using Redis in your app, Forgetsy
-can re-use the existing connection.
+```ruby
+Forgetsy.redis = Redis.new(host: "10.0.1.1", port: 6380, db: 15)
+```
 
-String: `Forgetsy.redis = 'localhost:6379'`
+or a hash of options that will be passed to `Redis.new`:
 
-Redis: `Forgetsy.redis = Redis.current`
+```ruby
+Forgetsy.redis = { host: "10.0.1.1", port: 6380, db: 15 }
+```
 
+The hash options also support a special `namespace` key which will namespace all
+Forgetsy keys under a prefix using the [redis-namespace][] gem. For example:
+
+```ruby
+Forgetsy.redis = { host: "localhost", port: 6379, db: 1, namespace: "forgetsy" }
+```
+
+which is equivalent to:
+
+```ruby
+require "redis-namespace"
+client = Redis.new(host: "localhost", port: 6379, db: 1)
+Forgetsy.redis = Redis::Namespace.new(:forgetsy, redis: client)
+```
+
+Note that if you are using the `namespace` key you are responsible for adding
+the `redis-namespace` gem to your project's Gemfile - this gem doesn't
+list it as a dependency.
 
 Usage
 -----
@@ -86,3 +105,6 @@ Copyright & License
 MIT license. See [LICENSE](LICENSE) for details.
 
 (c) 2013 [Art.sy Inc.](http://artsy.github.com)
+(c) 2017 Abe Voelker
+
+[redis-namespace]: https://github.com/resque/redis-namespace

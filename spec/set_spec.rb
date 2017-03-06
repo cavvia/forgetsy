@@ -4,22 +4,27 @@ describe "Forgetsy::Set" do
 
   before(:each) do
     @redis = Forgetsy.redis
-    @set = Forgetsy::Set.create('foo', t: 1.week)
+    @freezetime = Time.now
+    Timecop.freeze(@freezetime) do
+      @set = Forgetsy::Set.create('foo', t: WEEK)
+    end
   end
 
   describe 'creation' do
-    it 'creates a redis set with the appropriate name and stores metadata' do
-      @redis.zcount('foo', '-inf', '+inf').should == 2
+    it "creates the metadata hash" do
+      expect(@redis.hgetall("_forgetsy")).to eq({"foo:_last_decay"=>@freezetime.to_f.to_s, "foo:_t"=>"604800.0"})
     end
 
     it 'stores the last decayed date in a special key upon creation' do
-      manual_date = 3.weeks.ago
-      a = Forgetsy::Set.create('bar', t: 1.week, date: manual_date)
-      a.last_decayed_date.should == manual_date.to_f.round(7)
+      Timecop.freeze(Time.now) do
+        manual_date = Time.now - (3 * WEEK)
+        a = Forgetsy::Set.create('bar', t: WEEK, date: manual_date)
+        a.last_decayed_date.should == manual_date.to_f
+      end
     end
 
     it 'stores the mean lifetime in a special key upon creation' do
-      @set.lifetime.should == 1.week.to_f
+      @set.lifetime.should == WEEK.to_f
     end
 
     it 'fails with an argument error when no :t option is supplied' do
@@ -45,11 +50,19 @@ describe "Forgetsy::Set" do
     end
 
     it 'ignores an increment with a date older than the last decay date' do
-      manual_date = 2.weeks.ago
-      lifetime = 2.weeks
+      manual_date = Time.now - (2 * WEEK)
+      lifetime = 2 * WEEK
       @set = Forgetsy::Set.create('foo', t: lifetime, date: manual_date)
-      @set.incr('foo_bin', date: 3.weeks.ago)
+      @set.incr('foo_bin', date: Time.now - 3 * WEEK)
       @set.fetch(bin: 'foo_bin').values.first.should == nil
+    end
+
+    it 'increments counters when the set is created at the same time as the increment' do
+      manual_date = Time.now - 2 * WEEK
+      lifetime = 2 * WEEK
+      @set = Forgetsy::Set.create('foo', t: lifetime, date: manual_date)
+      @set.incr('foo_bin', date: manual_date)
+      @set.fetch(bin: 'foo_bin').values.first.should_not == nil
     end
   end
 
@@ -70,34 +83,43 @@ describe "Forgetsy::Set" do
       @set.incr_by('bar_bin', 1)
       @set.fetch(decay: false).should == { 'foo_bin' => 2.0, 'bar_bin' => 1.0 }
     end
+
+    it "doesn't error on large set cardinality" do
+      @set.stub(:fetch_raw) do |args|
+        (1..70000).to_a.map{|i| [i.to_s, 1.0]}
+      end
+      expect{@set.fetch()}.to_not raise_error(SystemStackError)
+    end
   end
 
   describe 'decay' do
     it 'decays counts exponentially' do
-      manual_date = 2.days.ago
       now = Time.now
-      time_delta = now - manual_date
-      lifetime = 1.week
-      foo, bar = 2, 10
+      Timecop.freeze(now) do
+        manual_date = Time.now - (2 * DAY)
+        time_delta = now - manual_date
+        lifetime = WEEK
+        foo, bar = 2, 10
 
-      rate = 1 / Float(lifetime)
-      @set = Forgetsy::Set.create('foo', t: lifetime, date: manual_date)
-      @set.incr_by('foo_bin', foo)
-      @set.incr_by('bar_bin', bar)
+        rate = 1 / Float(lifetime)
+        @set = Forgetsy::Set.create('foo', t: lifetime, date: manual_date)
+        @set.incr_by('foo_bin', foo)
+        @set.incr_by('bar_bin', bar)
 
-      decayed_foo = foo * Math.exp(- rate * time_delta)
-      decayed_bar = bar * Math.exp(- rate * time_delta)
+        decayed_foo = foo * Math.exp(- rate * time_delta)
+        decayed_bar = bar * Math.exp(- rate * time_delta)
 
-      @set.decay(date: now)
-      @set.fetch(bin: 'foo_bin').values.first.round(3).should == decayed_foo.round(3)
-      @set.fetch(bin: 'bar_bin').values.first.round(3).should == decayed_bar.round(3)
+        @set.decay(date: now)
+        @set.fetch(bin: 'foo_bin').values.first.should == decayed_foo
+        @set.fetch(bin: 'bar_bin').values.first.should == decayed_bar
+      end
     end
   end
 
   describe 'scrub' do
     it 'scrubs keys below a defined threshold during a fetch' do
-      manual_date = 12.months.ago
-      lifetime = 1.week
+      manual_date = Time.now - (12 * MONTH)
+      lifetime = WEEK
       @set = Forgetsy::Set.create('foo', t: lifetime, date: manual_date)
       @set.incr('foo_bin')
       @set.fetch.values.length.should == 0
