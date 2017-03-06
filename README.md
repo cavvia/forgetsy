@@ -105,5 +105,6 @@ Copyright & License
 MIT license. See [LICENSE](LICENSE) for details.
 
 (c) 2013 [Art.sy Inc.](http://artsy.github.com)
+(c) 2017 Abe Voelker
 
 [redis-namespace]: https://github.com/resque/redis-namespace
