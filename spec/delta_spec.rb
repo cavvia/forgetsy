@@ -21,7 +21,7 @@ describe "Forgetsy::Delta" do
 
   describe 'retrospective creation' do
     it 'sets last decay date of secondary set to older than that of the primary' do
-      delta = Forgetsy::Delta.create('foo', t: 1.week)
+      delta = Forgetsy::Delta.create('foo', t: 1.week, replay: true)
       delta.should be_kind_of(Forgetsy::Delta)
       primary_set = delta.primary_set
       secondary_set = delta.secondary_set
