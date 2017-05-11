@@ -1,6 +1,10 @@
 module Forgetsy
   # A data structure that decays counts exponentially
   # over time. Decay is applied at read time.
+
+  class InvalidDateError < StandardError
+  end
+
   class Set
     attr_accessor :name, :conn
 
@@ -89,12 +93,14 @@ module Forgetsy
 
     def incr(bin, opts = {})
       date = opts.fetch(:date, Time.now)
-      @conn.zincrby(@name, 1, bin) if valid_incr_date(date)
+      raise InvalidDateError, 'date cannot be older than last decayed time' unless valid_incr_date(date)
+      @conn.zincrby(@name, 1, bin)
     end
 
     def incr_by(bin, by, opts = {})
       date = opts.fetch(:date, Time.now)
-      @conn.zincrby(@name, by, bin) if valid_incr_date(date)
+      raise InvalidDateError, 'date cannot be older than last decayed time' unless valid_incr_date(date)
+      @conn.zincrby(@name, by, bin)
     end
 
     def last_decayed_date

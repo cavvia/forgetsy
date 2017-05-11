@@ -23,7 +23,7 @@ Installation
 Add this to your Gemfile:
 
 ```ruby
-gem 'forgetsy', github: 'cavvia/forgetsy', branch: 'v0.2.7'
+gem 'forgetsy', github: 'cavvia/forgetsy', branch: 'v0.3'
 ```
 
 Configuration
