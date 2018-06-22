@@ -15,7 +15,7 @@ describe "Forgetsy::Set" do
     it 'stores the last decayed date in a special key upon creation' do
       manual_date = 3.weeks.ago
       a = Forgetsy::Set.create('bar', t: 1.week, date: manual_date)
-      expect(a.last_decayed_date).to eq(manual_date.to_f.round(7))
+      expect(a.last_decayed_date).to be_within(0.1).of(manual_date.to_f.round(7))
     end
 
     it 'stores the mean lifetime in a special key upon creation' do
