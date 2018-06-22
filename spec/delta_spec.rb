@@ -9,23 +9,23 @@ describe "Forgetsy::Delta" do
   describe 'creation' do
     it 'creates two set instances with appropriate keys' do
       delta = Forgetsy::Delta.create('foo', t: 1.week)
-      delta.should be_kind_of(Forgetsy::Delta)
+      expect(delta).to be_kind_of(Forgetsy::Delta)
       set = delta.primary_set
-      set.should be_kind_of(Forgetsy::Set)
-      @redis.exists(set.name).should == true
+      expect(set).to be_kind_of(Forgetsy::Set)
+      expect(@redis.exists(set.name)).to eq(true)
       set = delta.secondary_set
-      set.should be_kind_of(Forgetsy::Set)
-      @redis.exists(set.name).should == true
+      expect(set).to be_kind_of(Forgetsy::Set)
+      expect(@redis.exists(set.name)).to eq(true)
     end
   end
 
   describe 'retrospective creation' do
     it 'sets last decay date of secondary set to older than that of the primary' do
       delta = Forgetsy::Delta.create('foo', t: 1.week, replay: true)
-      delta.should be_kind_of(Forgetsy::Delta)
+      expect(delta).to be_kind_of(Forgetsy::Delta)
       primary_set = delta.primary_set
       secondary_set = delta.secondary_set
-      secondary_set.last_decayed_date.should < primary_set.last_decayed_date
+      expect(secondary_set.last_decayed_date).to be < primary_set.last_decayed_date
     end
   end
 
@@ -35,23 +35,23 @@ describe "Forgetsy::Delta" do
       delta.incr('foo_bin')
       delta.incr('foo_bin')
       delta.incr('bar_bin')
-      delta.fetch(bin: 'foo_bin').values.first.round(1).should == 1.0
-      delta.fetch(bin: 'bar_bin').values.first.round(1).should == 1.0
+      expect(delta.fetch(bin: 'foo_bin').values.first.round(1)).to eq(1.0)
+      expect(delta.fetch(bin: 'bar_bin').values.first.round(1)).to eq(1.0)
     end
 
     it 'passes options on to sets' do
       opts = { decay: false }
       mock_set = double()
-      mock_set.should_receive(:fetch).with(opts) { [] }
+      expect(mock_set).to receive(:fetch).with(opts) { [] }
       delta = Forgetsy::Delta.create('foo', t: 1.week)
       delta.incr('foo_bin')
-      delta.stub(:primary_set) { mock_set }
+      allow(delta).to receive(:primary_set) { mock_set }
       delta.fetch(opts)
     end
 
     it 'returns nil when trying to fetch a non-existent bin' do
       delta = Forgetsy::Delta.create('foo', t: 1.week)
-      delta.fetch(bin: 'foo_bin').should == {'foo_bin' => nil }
+      expect(delta.fetch(bin: 'foo_bin')).to eq({'foo_bin' => nil })
     end
 
     it 'raises a value error if a delta with that name does not exist' do
@@ -61,7 +61,7 @@ describe "Forgetsy::Delta" do
       rescue NameError
         error = true
       end
-      error.should == true
+      expect(error).to eq(true)
     end
 
     it 'fetches normalised counts when fetching all scores' do
@@ -70,10 +70,10 @@ describe "Forgetsy::Delta" do
       delta.incr('foo_bin')
       delta.incr('bar_bin')
       all_scores = delta.fetch()
-      all_scores.keys[0].should == 'foo_bin'
-      all_scores.keys[1].should == 'bar_bin'
-      all_scores.values[0].round(1).should == 1.0
-      all_scores.values[1].round(1).should == 1.0
+      expect(all_scores.keys[0]).to eq('foo_bin')
+      expect(all_scores.keys[1]).to eq('bar_bin')
+      expect(all_scores.values[0].round(1)).to eq(1.0)
+      expect(all_scores.values[1].round(1)).to eq(1.0)
     end
 
     it 'limits results when using :n option' do
@@ -82,9 +82,9 @@ describe "Forgetsy::Delta" do
       delta.incr_by('bar_bin', 2)
       delta.incr('quux_bin')
       all_scores = delta.fetch(n: 2)
-      all_scores.length.should == 2
+      expect(all_scores.length).to eq(2)
       all_scores = delta.fetch()
-      all_scores.length.should == 3
+      expect(all_scores.length).to eq(3)
     end
 
     it "works with retroactive events" do
@@ -95,8 +95,8 @@ describe "Forgetsy::Delta" do
       follows_delta.incr('UserBar', date: 1.week.ago)
       follows_delta.incr('UserFoo', date: 1.day.ago)
       follows_delta.incr('UserFoo')
-      follows_delta.fetch['UserFoo'].round(2).should == 0.67
-      follows_delta.fetch['UserBar'].round(2).should == 0.50
+      expect(follows_delta.fetch['UserFoo'].round(2)).to eq(0.67)
+      expect(follows_delta.fetch['UserBar'].round(2)).to eq(0.50)
     end
   end
 
