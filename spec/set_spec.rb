@@ -9,17 +9,17 @@ describe "Forgetsy::Set" do
 
   describe 'creation' do
     it 'creates a redis set with the appropriate name and stores metadata' do
-      @redis.zcount('foo', '-inf', '+inf').should == 2
+      expect(@redis.zcount('foo', '-inf', '+inf')).to eq(2)
     end
 
     it 'stores the last decayed date in a special key upon creation' do
       manual_date = 3.weeks.ago
       a = Forgetsy::Set.create('bar', t: 1.week, date: manual_date)
-      a.last_decayed_date.should == manual_date.to_f.round(7)
+      expect(a.last_decayed_date).to be_within(0.1).of(manual_date.to_f.round(7))
     end
 
     it 'stores the mean lifetime in a special key upon creation' do
-      @set.lifetime.should == 1.week.to_f
+      expect(@set.lifetime).to eq(1.week.to_f)
     end
 
     it 'fails with an argument error when no :t option is supplied' do
@@ -29,19 +29,19 @@ describe "Forgetsy::Set" do
       rescue ArgumentError
         error = true
       end
-      error.should == true
+      expect(error).to eq(true)
     end
   end
 
   describe 'increments' do
     it 'increments counters correctly' do
       @set.incr('foo_bin')
-      @redis.zscore('foo', 'foo_bin').should == 1.0
+      expect(@redis.zscore('foo', 'foo_bin')).to eq(1.0)
     end
 
     it 'increments in batches' do
       @set.incr_by('foo_bin', 5)
-      @redis.zscore('foo', 'foo_bin').should == 5.0
+      expect(@redis.zscore('foo', 'foo_bin')).to eq(5.0)
     end
 
     it 'ignores an increment with a date older than the last decay date' do
@@ -49,26 +49,26 @@ describe "Forgetsy::Set" do
       lifetime = 2.weeks
       @set = Forgetsy::Set.create('foo', t: lifetime, date: manual_date)
       @set.incr('foo_bin', date: 3.weeks.ago)
-      @set.fetch(bin: 'foo_bin').values.first.should == nil
+      expect(@set.fetch(bin: 'foo_bin').values.first).to eq(nil)
     end
   end
 
   describe 'fetch' do
     it 'allows fetch by bin name' do
       @set.incr_by('foo_bin', 2)
-      @set.fetch(bin: 'foo_bin', decay: false).should == { 'foo_bin' => 2.0 }
+      expect(@set.fetch(bin: 'foo_bin', decay: false)).to eq({ 'foo_bin' => 2.0 })
     end
 
     it 'can fetch top n bins' do
       @set.incr_by('foo_bin', 2)
       @set.incr_by('bar_bin', 1)
-      @set.fetch(n: 2, decay: false).should == { 'foo_bin' => 2.0, 'bar_bin' => 1.0 }
+      expect(@set.fetch(n: 2, decay: false)).to eq({ 'foo_bin' => 2.0, 'bar_bin' => 1.0 })
     end
 
     it 'can fetch a whole set' do
       @set.incr_by('foo_bin', 2)
       @set.incr_by('bar_bin', 1)
-      @set.fetch(decay: false).should == { 'foo_bin' => 2.0, 'bar_bin' => 1.0 }
+      expect(@set.fetch(decay: false)).to eq({ 'foo_bin' => 2.0, 'bar_bin' => 1.0 })
     end
   end
 
@@ -89,8 +89,8 @@ describe "Forgetsy::Set" do
       decayed_bar = bar * Math.exp(- rate * time_delta)
 
       @set.decay(date: now)
-      @set.fetch(bin: 'foo_bin').values.first.round(3).should == decayed_foo.round(3)
-      @set.fetch(bin: 'bar_bin').values.first.round(3).should == decayed_bar.round(3)
+      expect(@set.fetch(bin: 'foo_bin').values.first.round(3)).to eq(decayed_foo.round(3))
+      expect(@set.fetch(bin: 'bar_bin').values.first.round(3)).to eq(decayed_bar.round(3))
     end
   end
 
@@ -100,7 +100,7 @@ describe "Forgetsy::Set" do
       lifetime = 1.week
       @set = Forgetsy::Set.create('foo', t: lifetime, date: manual_date)
       @set.incr('foo_bin')
-      @set.fetch.values.length.should == 0
+      expect(@set.fetch.values.length).to eq(0)
     end
   end
 end
